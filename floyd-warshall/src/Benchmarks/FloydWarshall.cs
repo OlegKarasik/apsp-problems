@@ -1,78 +1,31 @@
 ﻿using BenchmarkDotNet.Attributes;
-
+using Code.Utilz;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Problems
+namespace Code.Benchmarks
 {
-    public class Algorithms
+    public class FloydWarshall
     {
-        private const int NO_EDGE = (int.MaxValue / 2) - 1;
-
-        public IEnumerable<object[]> Arguments()
+        public static IEnumerable<object[]> Arguments()
         {
-            var inputs = new []
+            var inputs = new[]
             {
-                $@"{Environment.CurrentDirectory}\Data\300-35880.input",
-                $@"{Environment.CurrentDirectory}\Data\600-143760.input",
-                $@"{Environment.CurrentDirectory}\Data\1200-575520.input",
-                $@"{Environment.CurrentDirectory}\Data\2400-2303040.input",
-                $@"{Environment.CurrentDirectory}\Data\4800-9214080.input"
+                $@"{Environment.CurrentDirectory}/Data/300-35880.input",
+                $@"{Environment.CurrentDirectory}/Data/600-143760.input",
+                $@"{Environment.CurrentDirectory}/Data/1200-575520.input",
+                $@"{Environment.CurrentDirectory}/Data/2400-2303040.input",
+                $@"{Environment.CurrentDirectory}/Data/4800-9214080.input"
             };
 
             return inputs
                 .Select(i =>
                 {
-                    using (var r = new StreamReader(i))
-                    {
-                        var l = r.ReadLine();
-                        if (!int.TryParse(l, out var sz))
-                        {
-                            throw new Exception($"Can't read matrix size from '{i}'.");
-                        }
-
-                        var matrix = new int[sz * sz];
-                        
-                        Array.Fill(matrix, NO_EDGE);
-                        
-                        var values = new int[3];
-
-                        Array.Fill(values, 0);
-
-                        var l_idx = 0;
-                        var v_idx = 0;
-                        while ((l = r.ReadLine()) is { })
-                        {
-                            var s = l.AsSpan().Trim();
-
-                            do
-                            {
-                                var j = s.IndexOf(' ');
-                                if ((j <= 0) || (!int.TryParse(s.Slice(0, j), out values[v_idx])))
-                                {
-                                    throw new Exception($"Can't read value at line: {l_idx + 1}");
-                                }
-                                s = s.Slice(j).Trim();
-
-                                ++v_idx;
-                            } while (v_idx < values.Length - 1);
-
-                            if (!int.TryParse(s, out values[v_idx]))
-                            {
-                                throw new Exception($"Can't read value at line: {l_idx + 1}");
-                            }
-
-                            matrix[values[0] * sz + values[1]] = values[2];
-                            v_idx = 0;
-
-                            ++l_idx;
-                        }
-                        return new object[] { matrix, sz };
-                    }
+                    var (matrix, size) = MatrixHelpers.FromInputFile(i);
+                    return new object[] { matrix, size };
                 })
                 .ToArray();
         }
@@ -80,7 +33,7 @@ namespace Problems
         // baseline
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(Arguments))]
-        public void FloydWarshall_00(int[] matrix, int sz)
+        public void Variant_00(int[] matrix, int sz)
         {
             for (var k = 0; k < sz; ++k)
             {
@@ -101,13 +54,13 @@ namespace Problems
         // + graph specific optimization
         [Benchmark]
         [ArgumentsSource(nameof(Arguments))]
-        public void FloydWarshall_01(int[] matrix, int sz)
+        public void Variant_01(int[] matrix, int sz)
         {
             for (var k = 0; k < sz; ++k)
             {
                 for (var i = 0; i < sz; ++i)
                 {
-                    if (matrix[i * sz + k] == NO_EDGE)
+                    if (matrix[i * sz + k] == Constants.NO_EDGE)
                     {
                         continue;
                     }
@@ -127,13 +80,13 @@ namespace Problems
         // + parallel
         [Benchmark]
         [ArgumentsSource(nameof(Arguments))]
-        public void FloydWarshall_02(int[] matrix, int sz)
+        public void Variant_02(int[] matrix, int sz)
         {
             for (var k = 0; k < sz; ++k)
             {
                 Parallel.For(0, sz, i =>
                 {
-                    if (matrix[i * sz + k] == NO_EDGE)
+                    if (matrix[i * sz + k] == Constants.NO_EDGE)
                     {
                         return;
                     }
@@ -153,13 +106,13 @@ namespace Problems
         // + vectorization
         [Benchmark]
         [ArgumentsSource(nameof(Arguments))]
-        public void FloydWarshall_03(int[] matrix, int sz)
+        public void Variant_03(int[] matrix, int sz)
         {
             for (var k = 0; k < sz; ++k)
             {
                 for (var i = 0; i < sz; ++i)
                 {
-                    if (matrix[i * sz + k] == NO_EDGE)
+                    if (matrix[i * sz + k] == Constants.NO_EDGE)
                     {
                         continue;
                     }
@@ -169,7 +122,7 @@ namespace Problems
                     var j = 0;
                     for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
                     {
-                        var ij_vec  = new Vector<int>(matrix, i * sz + j);
+                        var ij_vec = new Vector<int>(matrix, i * sz + j);
                         var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
 
                         var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
@@ -199,13 +152,13 @@ namespace Problems
         // + parallel
         [Benchmark]
         [ArgumentsSource(nameof(Arguments))]
-        public void FloydWarshall_04(int[] matrix, int sz)
+        public void Variant_04(int[] matrix, int sz)
         {
             for (var k = 0; k < sz; ++k)
             {
                 Parallel.For(0, sz, i =>
                 {
-                    if (matrix[i * sz + k] == NO_EDGE)
+                    if (matrix[i * sz + k] == Constants.NO_EDGE)
                     {
                         return;
                     }
@@ -215,7 +168,7 @@ namespace Problems
                     var j = 0;
                     for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
                     {
-                        var ij_vec  = new Vector<int>(matrix, i * sz + j);
+                        var ij_vec = new Vector<int>(matrix, i * sz + j);
                         var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
 
                         var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
