@@ -7,8 +7,17 @@ namespace Code.Utilz
 {
   public static class MatrixHelpers
   {
+    public static (int[] matrix, int size) Initialize(
+      int size)
+    {
+      var matrix = new int[size * size];
+      Array.Fill(matrix, Constants.NO_EDGE);
+
+      return (matrix, size);
+    }
+    
     public static (int[] matrix, int size) FromInputFile(
-        string file)
+      string file)
     {
       if (string.IsNullOrWhiteSpace(file))
       {

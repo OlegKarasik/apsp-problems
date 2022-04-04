@@ -5,14 +5,10 @@ using Xunit;
 
 namespace Tests.Benchmarks
 {
-  public class FloydWarshallTests
+  public class FloydWarshallRoutesTests
   {
     [Theory]
     [InlineData("00")]
-    [InlineData("01")]
-    [InlineData("02")]
-    [InlineData("03")]
-    [InlineData("04")]
     public void Variants(string variant)
     {
       var inputs = new[]
@@ -23,25 +19,24 @@ namespace Tests.Benchmarks
       {
         var (matrix, size) = MatrixHelpers.FromInputFile(
           $@"{Environment.CurrentDirectory}/Data/{input}.input");
-          
+
+        var (routes, _) = MatrixHelpers.Initialize(size);
+
         var (result, _) = MatrixHelpers.FromInputFile(
           $@"{Environment.CurrentDirectory}/Data/{input}.input.result");
+
+        var (result_routes, _) = MatrixHelpers.FromInputFile(
+          $@"{Environment.CurrentDirectory}/Data/{input}.input.result.route");
 
         Assert.Equal(matrix.Length, result.Length);
 
         switch (variant)
         {
-          case "00": new FloydWarshall().FloydWarshall_00(matrix, size); break;
-          case "01": new FloydWarshall().FloydWarshall_01(matrix, size); break;
-          case "02": new FloydWarshall().FloydWarshall_02(matrix, size); break;
-          case "03": new FloydWarshall().FloydWarshall_03(matrix, size); break;
-          case "04": new FloydWarshall().FloydWarshall_04(matrix, size); break;
+          case "00": new FloydWarshallRoutes().FloydWarshallRoutes_00(matrix, routes, size); break;
         }
 
-        for (var i = 0; i < matrix.Length; ++i)
-        {
-          Assert.Equal(result[i], matrix[i]);
-        }
+          Assert.Equal(result, matrix);
+          Assert.Equal(result_routes, routes);
       }
     }
   }
