@@ -13,8 +13,9 @@ namespace Tests.Benchmarks
     {
       var inputs = new[]
       {
-                "18-14"
-            };
+        "18-14"
+      };
+
       foreach (var input in inputs)
       {
         var (matrix, size) = MatrixHelpers.FromInputFile(
@@ -33,10 +34,11 @@ namespace Tests.Benchmarks
         switch (variant)
         {
           case "00": new FloydWarshallRoutes().FloydWarshallRoutes_00(matrix, routes, size); break;
+          case "01": new FloydWarshallRoutes().FloydWarshallRoutes_01(matrix, routes, size); break;
         }
 
-          Assert.Equal(result, matrix);
-          Assert.Equal(result_routes, routes);
+        Assert.Equal(result, matrix);
+        Assert.Equal(result_routes, routes);
       }
     }
   }

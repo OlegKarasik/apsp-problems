@@ -17,8 +17,9 @@ namespace Tests.Benchmarks
     {
       var inputs = new[]
       {
-                "18-14"
-            };
+        "18-14"
+      };
+      
       foreach (var input in inputs)
       {
         var (matrix, size) = MatrixHelpers.FromInputFile(
