@@ -41,5 +41,17 @@ namespace Tests.Benchmarks
         Assert.Equal(result_routes, routes);
       }
     }
+  
+    [Theory]
+    [InlineData("18-14", 0, 1)]
+    public void Rebuild(string input, int i, int j)
+    {
+      var (routes, _) = MatrixHelpers.FromInputFile(
+        $@"{Environment.CurrentDirectory}/Data/{input}.input.result.route");
+
+
+      Assert.Equal(result, matrix);
+      Assert.Equal(result_routes, routes);
+    }
   }
 }

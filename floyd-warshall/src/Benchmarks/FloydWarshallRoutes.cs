@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 
 namespace Code.Benchmarks
 {
@@ -101,6 +100,23 @@ namespace Code.Benchmarks
           }
         }
       }
+    }
+
+    public static IEnumerable<int> RebuildRoute(int[] routes, int sz, int i, int j)
+    {
+      var x = new LinkedList<int>();
+
+      var z = routes[i * sz + j];
+      while (z != Constants.NO_EDGE) 
+      {
+        x.AddFirst(z);
+        z = routes[i * sz + z];
+      }
+
+      x.AddFirst(i);
+      x.AddLast(j);
+
+      return x;
     }
   }
 }
