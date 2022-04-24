@@ -1,6 +1,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Code.Utilz
@@ -52,6 +53,41 @@ namespace Code.Utilz
         matrix[from * size + to] = distance;
       }
       return (matrix, size);
+    }
+  }
+
+  public static class RoutesHelpers
+  {
+    public static int[] FromInputFile(
+      string file, int i, int j)
+    {
+      if (string.IsNullOrWhiteSpace(file))
+      {
+        throw new ArgumentException(
+          $"'{nameof(file)}' cannot be null or whitespace.",
+          nameof(file));
+      }
+
+      using var stream = new StreamReader(file);
+
+      string line = null;
+      while ((line = stream.ReadLine()) is not null)
+      {
+        var match = Regex.Match(line, @"(?<from>\d+):(?<to>\d+)=(?<route>[\d,]+)");
+        if (!match.Success)
+          throw new Exception($"Can't read <from>:<to>=<route> from '{line}'.");
+
+        var from = int.Parse(match.Groups["from"].ValueSpan);
+        var to = int.Parse(match.Groups["to"].ValueSpan);
+        if (from == i && to == j)
+        {
+          return match.Groups["route"].Value
+            .Split(',')
+            .Select(x => int.Parse(x))
+            .ToArray();
+        }
+      }
+      throw new Exception($"The route {i}:{j} isn't found in the input file.");
     }
   }
 }
