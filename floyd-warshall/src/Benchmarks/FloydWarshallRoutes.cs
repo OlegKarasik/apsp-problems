@@ -52,6 +52,7 @@ namespace Code.Benchmarks
       }
     }
 
+    // + graph optimization
     // + vectorization
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
