@@ -4,11 +4,11 @@ using System.Reflection;
 
 namespace Problems
 {
-    class Program
+  class Program
+  {
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            BenchmarkSwitcher.FromAssembly(Assembly.GetExecutingAssembly()).Run(args);
-        }
+      BenchmarkSwitcher.FromAssembly(Assembly.GetExecutingAssembly()).Run(args);
     }
+  }
 }
