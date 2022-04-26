@@ -103,7 +103,7 @@ namespace Code.Benchmarks
       }
     }
 
-    public static IEnumerable<int> RebuildRoute(int[] routes, int sz, int i, int j)
+    public static IEnumerable<int> RebuildRoute_00(int[] routes, int sz, int i, int j)
     {
       var x = new LinkedList<int>();
 
@@ -118,6 +118,39 @@ namespace Code.Benchmarks
       x.AddLast(j);
 
       return x;
+    }
+
+    public static IEnumerable<int> RebuildRoute_01(int[] routes, int sz, int i, int j)
+    {
+      var x = new int[sz];
+      var y = sz - 1;
+
+      x[y--] = j;
+
+      var z = routes[i * sz + j];
+      while (z != Constants.NO_EDGE) 
+      {
+        x[y--] = z;
+        z = routes[i * sz + z];
+      }
+
+      x[y] = i;
+
+      return new ArraySegment<int>(x, y, sz - y);
+    }
+
+    public static IEnumerable<int> RebuildRoute_Reverse_00(int[] routes, int sz, int i, int j)
+    {
+      yield return j;
+
+      var z = routes[i * sz + j];
+      while (z != Constants.NO_EDGE) 
+      {
+        yield return z;
+        z = routes[i * sz + z];
+      }
+
+      yield return i;
     }
   }
 }

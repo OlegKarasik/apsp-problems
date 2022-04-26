@@ -38,25 +38,43 @@ namespace Tests.Benchmarks
     // Important: this test can be executed only against existing paths!
     //
     [Theory]
-    [InlineData("18-14", 1, 2)]
-    [InlineData("18-14", 1, 3)]
-    [InlineData("18-14", 1, 6)]
-    [InlineData("18-14", 1, 4)]
-    [InlineData("18-14", 3, 2)]
-    [InlineData("18-14", 3, 4)]
-    [InlineData("18-14", 3, 6)]
-    [InlineData("18-14", 4, 2)]
-    [InlineData("18-14", 4, 6)]
-    [InlineData("18-14", 11, 12)]
-    [InlineData("18-14", 11, 13)]
-    [InlineData("18-14", 11, 16)]
-    [InlineData("18-14", 11, 14)]
-    [InlineData("18-14", 13, 12)]
-    [InlineData("18-14", 13, 14)]
-    [InlineData("18-14", 13, 16)]
-    [InlineData("18-14", 14, 12)]
-    [InlineData("18-14", 14, 16)]
-    public void Rebuild(string input, int i, int j)
+    [InlineData("18-14", "00", 1, 2)]
+    [InlineData("18-14", "00", 1, 3)]
+    [InlineData("18-14", "00", 1, 6)]
+    [InlineData("18-14", "00", 1, 4)]
+    [InlineData("18-14", "00", 3, 2)]
+    [InlineData("18-14", "00", 3, 4)]
+    [InlineData("18-14", "00", 3, 6)]
+    [InlineData("18-14", "00", 4, 2)]
+    [InlineData("18-14", "00", 4, 6)]
+    [InlineData("18-14", "00", 11, 12)]
+    [InlineData("18-14", "00", 11, 13)]
+    [InlineData("18-14", "00", 11, 16)]
+    [InlineData("18-14", "00", 11, 14)]
+    [InlineData("18-14", "00", 13, 12)]
+    [InlineData("18-14", "00", 13, 14)]
+    [InlineData("18-14", "00", 13, 16)]
+    [InlineData("18-14", "00", 14, 12)]
+    [InlineData("18-14", "00", 14, 16)]
+    [InlineData("18-14", "01", 1, 2)]
+    [InlineData("18-14", "01", 1, 3)]
+    [InlineData("18-14", "01", 1, 6)]
+    [InlineData("18-14", "01", 1, 4)]
+    [InlineData("18-14", "01", 3, 2)]
+    [InlineData("18-14", "01", 3, 4)]
+    [InlineData("18-14", "01", 3, 6)]
+    [InlineData("18-14", "01", 4, 2)]
+    [InlineData("18-14", "01", 4, 6)]
+    [InlineData("18-14", "01", 11, 12)]
+    [InlineData("18-14", "01", 11, 13)]
+    [InlineData("18-14", "01", 11, 16)]
+    [InlineData("18-14", "01", 11, 14)]
+    [InlineData("18-14", "01", 13, 12)]
+    [InlineData("18-14", "01", 13, 14)]
+    [InlineData("18-14", "01", 13, 16)]
+    [InlineData("18-14", "01", 14, 12)]
+    [InlineData("18-14", "01", 14, 16)]
+    public void Rebuild(string input, string variant, int i, int j)
     {
       // Arrange
       var (routes, sz) = MatrixHelpers.FromInputFile(
@@ -66,7 +84,11 @@ namespace Tests.Benchmarks
         $@"{Environment.CurrentDirectory}/Data/{input}.input.result.routes", i, j);
 
       // Act
-      var result = FloydWarshallRoutes.RebuildRoute(routes, sz, i, j);
+      var result = variant switch
+      {
+        "00" => FloydWarshallRoutes.RebuildRoute_00(routes, sz, i, j),
+        "01" => FloydWarshallRoutes.RebuildRoute_01(routes, sz, i, j),
+      };
 
       // Assert
       Assert.Equal(result, route);
