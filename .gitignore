@@ -4,3 +4,5 @@ bin
 obj
 *.log
 .DS_Store
+BenchmarkDotNet.Artifacts
+*.input
