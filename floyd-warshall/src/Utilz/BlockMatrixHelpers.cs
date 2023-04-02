@@ -1,14 +1,8 @@
-
-using System;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-
 namespace Code.Utilz
 {
   public static class BlockMatrixHelpers
   {
-    public static (int[] matrix, int block_count, int block_size) ConvertFrom(
+    public static (int[] matrix, int block_count, int block_size) ConvertMatrixToBlockMatrix(
       int[] matrix, int size, int block_size)
     {
       var block_count = size / block_size;
@@ -31,7 +25,7 @@ namespace Code.Utilz
       return (result, block_count, block_size);
     }
 
-    public static (int[] matrix, int size) ConvertTo(
+    public static (int[] matrix, int size) ConvertBlockMatrixToMatrix(
       int[] matrix, int block_count, int block_size)
     {
       var size = block_count * block_size;

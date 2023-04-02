@@ -31,25 +31,26 @@ namespace Code.Benchmarks
             var (matrix, size) = MatrixHelpers.FromInputFile(i);
             return blocks.Select(j => 
             {
-              var (block_matrix, block_count, block_size) = BlockMatrixHelpers.ConvertFrom(matrix, size, j);
+              var (block_matrix, block_count, block_size) = BlockMatrixHelpers.ConvertMatrixToBlockMatrix(matrix, size, j);
               return new object[] { block_matrix, block_count, block_size };
             });
           })
         .ToArray();
     }
 
-    private void BlockFloydWarshall_00_Proc(int[] matrix, int bsz, int offset_ij, int offset_ik, int offset_kj)
+    private static void BlockFloydWarshall_00_Procedure(
+      int[] matrix, int block_size, int offset_ij, int offset_ik, int offset_kj)
     {
-      for (var k = 0; k < bsz; ++k)
+      for (var k = 0; k < block_size; ++k)
       {
-        for (var i = 0; i < bsz; ++i)
+        for (var i = 0; i < block_size; ++i)
         {
-          for (var j = 0; j < bsz; ++j)
+          for (var j = 0; j < block_size; ++j)
           {
-            var distance = matrix[offset_ik + i * bsz + k] + matrix[offset_kj + k * bsz + j];
-            if (matrix[offset_ij + i * bsz + j] > distance)
+            var distance = matrix[offset_ik + i * block_size + k] + matrix[offset_kj + k * block_size + j];
+            if (matrix[offset_ij + i * block_size + j] > distance)
             {
-              matrix[offset_ij + i * bsz + j] = distance;
+              matrix[offset_ij + i * block_size + j] = distance;
             }
           }
         }
@@ -59,7 +60,7 @@ namespace Code.Benchmarks
     // baseline
     [Benchmark(Baseline = true)]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_00(int[] matrix, int block_count, int block_size)
+    public void BlockFloydWarshall_00(int[] matrix, int block_count, int block_size)
     {
       var sz_block = block_size * block_size;
       var sz_block_row = block_count * sz_block;
@@ -68,7 +69,7 @@ namespace Code.Benchmarks
       {
         var offset_mm = m * sz_block_row + m * sz_block;
 
-        BlockFloydWarshall_00_Proc(matrix, block_size, offset_mm, offset_mm, offset_mm);
+        BlockFloydWarshall_00_Procedure(matrix, block_size, offset_mm, offset_mm, offset_mm);
 
         for (var i = 0; i < block_count; ++i) 
         {
@@ -77,8 +78,8 @@ namespace Code.Benchmarks
             var offset_im = i * sz_block_row + m * sz_block;
             var offset_mi = m * sz_block_row + i * sz_block;
 
-            BlockFloydWarshall_00_Proc(matrix, block_size, offset_im, offset_im, offset_mm);
-            BlockFloydWarshall_00_Proc(matrix, block_size, offset_mi, offset_mm, offset_mi);
+            BlockFloydWarshall_00_Procedure(matrix, block_size, offset_im, offset_im, offset_mm);
+            BlockFloydWarshall_00_Procedure(matrix, block_size, offset_mi, offset_mm, offset_mi);
           }
         }
         for (var i = 0; i < block_count; ++i) 
@@ -93,7 +94,7 @@ namespace Code.Benchmarks
                 var offset_ij = i * sz_block_row + j * sz_block;
                 var offset_mj = m * sz_block_row + j * sz_block;
 
-                BlockFloydWarshall_00_Proc(matrix, block_size, offset_ij, offset_im, offset_mj);
+                BlockFloydWarshall_00_Procedure(matrix, block_size, offset_ij, offset_im, offset_mj);
               }
             }
           }

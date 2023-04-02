@@ -11,17 +11,17 @@ namespace Tests.Benchmarks
     [InlineData("18-14", 2)]
     [InlineData("18-14", 3)]
     [InlineData("18-14", 6)]
-    public void Convertion(string input, int bsz)
+    public void Convertion(string input, int block_size)
     {
       // Arrange
       var (matrix, size) = MatrixHelpers.FromInputFile(
         $@"{Environment.CurrentDirectory}/Data/{input}.input");
 
       // Act: convert input matrix to block matrix
-      var (block_matrix, block_count, block_size) = BlockMatrixHelpers.ConvertFrom(matrix, size, bsz);
+      var (block_matrix, block_count, _) = BlockMatrixHelpers.ConvertMatrixToBlockMatrix(matrix, size, block_size);
 
       // Act: now convert block matrix back to matrix
-      var (result, _) = BlockMatrixHelpers.ConvertTo(block_matrix, block_count, block_size);
+      var (result, _) = BlockMatrixHelpers.ConvertBlockMatrixToMatrix(block_matrix, block_count, block_size);
 
       // Assert
       Assert.Equal(matrix, result);
@@ -31,7 +31,7 @@ namespace Tests.Benchmarks
     [InlineData("18-14", "00", 2)]
     [InlineData("18-14", "00", 3)]
     [InlineData("18-14", "00", 6)]
-    public void Variants(string input, string variant, int bsz)
+    public void Variants(string input, string variant, int block_size)
     {
       // Arrange
       var (matrix, size) = MatrixHelpers.FromInputFile(
@@ -41,13 +41,13 @@ namespace Tests.Benchmarks
         $@"{Environment.CurrentDirectory}/Data/{input}.input.result");
 
       // Arrange: convert both matrices to block matrices
-      var (block_matrix, block_count, block_size) = BlockMatrixHelpers.ConvertFrom(matrix, size, bsz);
-      var (result_block_matrix, _, _) = BlockMatrixHelpers.ConvertFrom(result, size, bsz);
+      var (block_matrix, block_count, _) = BlockMatrixHelpers.ConvertMatrixToBlockMatrix(matrix, size, block_size);
+      var (result_block_matrix, _, _) = BlockMatrixHelpers.ConvertMatrixToBlockMatrix(result, size, block_size);
 
       // Act
       switch (variant)
       {
-        case "00": new BlockFloydWarshall().FloydWarshall_00(block_matrix, block_count, block_size); break;
+        case "00": new BlockFloydWarshall().BlockFloydWarshall_00(block_matrix, block_count, block_size); break;
       }
 
       // Assert
