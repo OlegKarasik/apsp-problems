@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Code.Benchmarks
 {
+  [MemoryDiagnoser]
   public class BlockFloydWarshall
   {
     public static IEnumerable<object[]> Arguments()
@@ -39,7 +40,7 @@ namespace Code.Benchmarks
     }
 
     private static void BlockFloydWarshall_00_Procedure(
-      int[] matrix, int block_size, int offset_ij, int offset_ik, int offset_kj)
+      Span<int> ij, Span<int> ik, Span<int> kj, int block_size)
     {
       for (var k = 0; k < block_size; ++k)
       {
@@ -47,10 +48,10 @@ namespace Code.Benchmarks
         {
           for (var j = 0; j < block_size; ++j)
           {
-            var distance = matrix[offset_ik + i * block_size + k] + matrix[offset_kj + k * block_size + j];
-            if (matrix[offset_ij + i * block_size + j] > distance)
+            var distance = ik[i * block_size + k] + kj[k * block_size + j];
+            if (ij[i * block_size + j] > distance)
             {
-              matrix[offset_ij + i * block_size + j] = distance;
+              ij[i * block_size + j] = distance;
             }
           }
         }
@@ -69,7 +70,9 @@ namespace Code.Benchmarks
       {
         var offset_mm = m * sz_block_row + m * sz_block;
 
-        BlockFloydWarshall_00_Procedure(matrix, block_size, offset_mm, offset_mm, offset_mm);
+        var mm = new Span<int>(matrix, offset_mm, sz_block);
+
+        BlockFloydWarshall_00_Procedure(mm, mm, mm, block_size);
 
         for (var i = 0; i < block_count; ++i) 
         {
@@ -77,9 +80,12 @@ namespace Code.Benchmarks
           {
             var offset_im = i * sz_block_row + m * sz_block;
             var offset_mi = m * sz_block_row + i * sz_block;
+        
+            var im = new Span<int>(matrix, offset_im, sz_block);
+            var mi = new Span<int>(matrix, offset_mi, sz_block);
 
-            BlockFloydWarshall_00_Procedure(matrix, block_size, offset_im, offset_im, offset_mm);
-            BlockFloydWarshall_00_Procedure(matrix, block_size, offset_mi, offset_mm, offset_mi);
+            BlockFloydWarshall_00_Procedure(im, im, mm, block_size);
+            BlockFloydWarshall_00_Procedure(mi, mm, mi, block_size);
           }
         }
         for (var i = 0; i < block_count; ++i) 
@@ -87,14 +93,20 @@ namespace Code.Benchmarks
           if (i != m) 
           {
             var offset_im = i * sz_block_row + m * sz_block;
+
+            var im = new Span<int>(matrix, offset_im, sz_block);
+
             for (var j = 0; j < block_count; ++j) 
             {
               if (j != m) 
               {
                 var offset_ij = i * sz_block_row + j * sz_block;
                 var offset_mj = m * sz_block_row + j * sz_block;
+        
+                var ij = new Span<int>(matrix, offset_ij, sz_block);
+                var mj = new Span<int>(matrix, offset_mj, sz_block);
 
-                BlockFloydWarshall_00_Procedure(matrix, block_size, offset_ij, offset_im, offset_mj);
+                BlockFloydWarshall_00_Procedure(ij, im, mj, block_size);
               }
             }
           }
@@ -102,30 +114,163 @@ namespace Code.Benchmarks
       }
     }
 
-    // // + graph specific optimization
-    // [Benchmark]
-    // [ArgumentsSource(nameof(Arguments))]
-    // public void FloydWarshall_01(int[] matrix, int sz)
-    // {
-    //   for (var k = 0; k < sz; ++k)
-    //   {
-    //     for (var i = 0; i < sz; ++i)
-    //     {
-    //       if (matrix[i * sz + k] == Constants.NO_EDGE)
-    //       {
-    //         continue;
-    //       }
-    //       for (var j = 0; j < sz; ++j)
-    //       {
-    //         var distance = matrix[i * sz + k] + matrix[k * sz + j];
-    //         if (matrix[i * sz + j] > distance)
-    //         {
-    //           matrix[i * sz + j] = distance;
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
+    private static void BlockFloydWarshall_01_Procedure(
+      Span<int> ij, Span<int> ik, Span<int> kj, int block_size)
+    {
+      for (var k = 0; k < block_size; ++k)
+      {
+        for (var i = 0; i < block_size; ++i)
+        {
+          if (ik[i * block_size + k] == Constants.NO_EDGE)
+          {
+            continue;
+          }
+          for (var j = 0; j < block_size; ++j)
+          {
+            var distance = ik[i * block_size + k] + kj[k * block_size + j];
+            if (ij[i * block_size + j] > distance)
+            {
+              ij[i * block_size + j] = distance;
+            }
+          }
+        }
+      }
+    }
+
+    // + graph specific optimization
+    [Benchmark]
+    [ArgumentsSource(nameof(Arguments))]
+    public void BlockFloydWarshall_01(int[] matrix, int block_count, int block_size)
+    {
+      var sz_block = block_size * block_size;
+      var sz_block_row = block_count * sz_block;
+
+      for (var m = 0; m < block_count; ++m) 
+      {
+        var offset_mm = m * sz_block_row + m * sz_block;
+
+        var mm = new Span<int>(matrix, offset_mm, sz_block);
+
+        BlockFloydWarshall_01_Procedure(mm, mm, mm, block_size);
+
+        for (var i = 0; i < block_count; ++i) 
+        {
+          if (i != m) 
+          {
+            var offset_im = i * sz_block_row + m * sz_block;
+            var offset_mi = m * sz_block_row + i * sz_block;
+        
+            var im = new Span<int>(matrix, offset_im, sz_block);
+            var mi = new Span<int>(matrix, offset_mi, sz_block);
+
+            BlockFloydWarshall_01_Procedure(im, im, mm, block_size);
+            BlockFloydWarshall_01_Procedure(mi, mm, mi, block_size);
+          }
+        }
+        for (var i = 0; i < block_count; ++i) 
+        {
+          if (i != m) 
+          {
+            var offset_im = i * sz_block_row + m * sz_block;
+
+            var im = new Span<int>(matrix, offset_im, sz_block);
+
+            for (var j = 0; j < block_count; ++j) 
+            {
+              if (j != m) 
+              {
+                var offset_ij = i * sz_block_row + j * sz_block;
+                var offset_mj = m * sz_block_row + j * sz_block;
+        
+                var ij = new Span<int>(matrix, offset_ij, sz_block);
+                var mj = new Span<int>(matrix, offset_mj, sz_block);
+
+                BlockFloydWarshall_01_Procedure(ij, im, mj, block_size);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // + graph specific optimization
+    // + parallel
+    [Benchmark]
+    [ArgumentsSource(nameof(Arguments))]
+    public void BlockFloydWarshall_02(int[] matrix, int block_count, int block_size)
+    {
+      var sz_block = block_size * block_size;
+      var sz_block_row = block_count * sz_block;
+
+      for (var m = 0; m < block_count; ++m) 
+      {
+        var offset_mm = m * sz_block_row + m * sz_block;
+
+        var mm = new Span<int>(matrix, offset_mm, sz_block);
+
+        BlockFloydWarshall_01_Procedure(mm, mm, mm, block_size);
+
+        Task.Run(() => 
+        {
+          for (var i = 0; i < block_count; ++i) 
+          {
+            if (i != m) 
+            {
+              var offset_im = i * sz_block_row + m * sz_block;
+              var offset_mi = m * sz_block_row + i * sz_block;
+          
+              new Task(() => {
+                var mm = new Span<int>(matrix, offset_mm, sz_block);
+                var im = new Span<int>(matrix, offset_im, sz_block);
+                var mi = new Span<int>(matrix, offset_mi, sz_block);
+
+                BlockFloydWarshall_01_Procedure(im, im, mm, block_size);
+              }, 
+              TaskCreationOptions.AttachedToParent).Start();
+
+              new Task(() => {
+                var mm = new Span<int>(matrix, offset_mm, sz_block);
+                var im = new Span<int>(matrix, offset_im, sz_block);
+                var mi = new Span<int>(matrix, offset_mi, sz_block);
+
+                BlockFloydWarshall_01_Procedure(mi, mm, mi, block_size);
+              }, 
+              TaskCreationOptions.AttachedToParent).Start();
+            }
+          }
+        })
+        .Wait();
+
+        Task.Run(() => 
+        {
+          for (var i = 0; i < block_count; ++i) 
+          {
+            if (i != m) 
+            {
+              var offset_im = i * sz_block_row + m * sz_block;
+              for (var j = 0; j < block_count; ++j) 
+              {
+                if (j != m) 
+                {
+                  var offset_ij = i * sz_block_row + j * sz_block;
+                  var offset_mj = m * sz_block_row + j * sz_block;
+
+                  new Task(() => {
+                    var im = new Span<int>(matrix, offset_im, sz_block);
+                    var ij = new Span<int>(matrix, offset_ij, sz_block);
+                    var mj = new Span<int>(matrix, offset_mj, sz_block);
+
+                    BlockFloydWarshall_01_Procedure(ij, im, mj, block_size);
+                  }, 
+                  TaskCreationOptions.AttachedToParent).Start();
+                }
+              }
+            }
+          }
+        })
+        .Wait();
+      }
+    }
 
     // // + graph specific optimization
     // // + parallel

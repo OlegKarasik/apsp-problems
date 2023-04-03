@@ -31,6 +31,12 @@ namespace Tests.Benchmarks
     [InlineData("18-14", "00", 2)]
     [InlineData("18-14", "00", 3)]
     [InlineData("18-14", "00", 6)]
+    [InlineData("18-14", "01", 2)]
+    [InlineData("18-14", "01", 3)]
+    [InlineData("18-14", "01", 6)]
+    [InlineData("18-14", "02", 2)]
+    [InlineData("18-14", "02", 3)]
+    [InlineData("18-14", "02", 6)]
     public void Variants(string input, string variant, int block_size)
     {
       // Arrange
@@ -48,6 +54,8 @@ namespace Tests.Benchmarks
       switch (variant)
       {
         case "00": new BlockFloydWarshall().BlockFloydWarshall_00(block_matrix, block_count, block_size); break;
+        case "01": new BlockFloydWarshall().BlockFloydWarshall_01(block_matrix, block_count, block_size); break;
+        case "02": new BlockFloydWarshall().BlockFloydWarshall_02(block_matrix, block_count, block_size); break;
       }
 
       // Assert
