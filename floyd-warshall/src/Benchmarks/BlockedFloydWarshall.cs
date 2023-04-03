@@ -273,32 +273,6 @@ namespace Code.Benchmarks
     }
 
     // // + graph specific optimization
-    // // + parallel
-    // [Benchmark]
-    // [ArgumentsSource(nameof(Arguments))]
-    // public void FloydWarshall_02(int[] matrix, int sz)
-    // {
-    //   for (var k = 0; k < sz; ++k)
-    //   {
-    //     Parallel.For(0, sz, i =>
-    //     {
-    //       if (matrix[i * sz + k] == Constants.NO_EDGE)
-    //       {
-    //         return;
-    //       }
-    //       for (var j = 0; j < sz; ++j)
-    //       {
-    //         var distance = matrix[i * sz + k] + matrix[k * sz + j];
-    //         if (matrix[i * sz + j] > distance)
-    //         {
-    //           matrix[i * sz + j] = distance;
-    //         }
-    //       }
-    //     });
-    //   }
-    // }
-
-    // // + graph specific optimization
     // // + vectorization
     // [Benchmark]
     // [ArgumentsSource(nameof(Arguments))]
