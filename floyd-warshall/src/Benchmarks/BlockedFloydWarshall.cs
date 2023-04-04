@@ -39,7 +39,7 @@ namespace Code.Benchmarks
         .ToArray();
     }
 
-    private static void BlockFloydWarshall_00_Procedure(
+    private static void BlockFloydWarshall_Procedure(
       Span<int> ij, Span<int> ik, Span<int> kj, int block_size)
     {
       for (var k = 0; k < block_size; ++k)
@@ -72,7 +72,7 @@ namespace Code.Benchmarks
 
         var mm = new Span<int>(matrix, offset_mm, sz_block);
 
-        BlockFloydWarshall_00_Procedure(mm, mm, mm, block_size);
+        BlockFloydWarshall_Procedure(mm, mm, mm, block_size);
 
         for (var i = 0; i < block_count; ++i) 
         {
@@ -84,8 +84,8 @@ namespace Code.Benchmarks
             var im = new Span<int>(matrix, offset_im, sz_block);
             var mi = new Span<int>(matrix, offset_mi, sz_block);
 
-            BlockFloydWarshall_00_Procedure(im, im, mm, block_size);
-            BlockFloydWarshall_00_Procedure(mi, mm, mi, block_size);
+            BlockFloydWarshall_Procedure(im, im, mm, block_size);
+            BlockFloydWarshall_Procedure(mi, mm, mi, block_size);
           }
         }
         for (var i = 0; i < block_count; ++i) 
@@ -106,7 +106,7 @@ namespace Code.Benchmarks
                 var ij = new Span<int>(matrix, offset_ij, sz_block);
                 var mj = new Span<int>(matrix, offset_mj, sz_block);
 
-                BlockFloydWarshall_00_Procedure(ij, im, mj, block_size);
+                BlockFloydWarshall_Procedure(ij, im, mj, block_size);
               }
             }
           }
@@ -114,7 +114,7 @@ namespace Code.Benchmarks
       }
     }
 
-    private static void BlockFloydWarshall_01_Procedure(
+    private static void BlockFloydWarshall_GS_Procedure(
       Span<int> ij, Span<int> ik, Span<int> kj, int block_size)
     {
       for (var k = 0; k < block_size; ++k)
@@ -151,7 +151,7 @@ namespace Code.Benchmarks
 
         var mm = new Span<int>(matrix, offset_mm, sz_block);
 
-        BlockFloydWarshall_01_Procedure(mm, mm, mm, block_size);
+        BlockFloydWarshall_GS_Procedure(mm, mm, mm, block_size);
 
         for (var i = 0; i < block_count; ++i) 
         {
@@ -163,8 +163,8 @@ namespace Code.Benchmarks
             var im = new Span<int>(matrix, offset_im, sz_block);
             var mi = new Span<int>(matrix, offset_mi, sz_block);
 
-            BlockFloydWarshall_01_Procedure(im, im, mm, block_size);
-            BlockFloydWarshall_01_Procedure(mi, mm, mi, block_size);
+            BlockFloydWarshall_GS_Procedure(im, im, mm, block_size);
+            BlockFloydWarshall_GS_Procedure(mi, mm, mi, block_size);
           }
         }
         for (var i = 0; i < block_count; ++i) 
@@ -185,7 +185,7 @@ namespace Code.Benchmarks
                 var ij = new Span<int>(matrix, offset_ij, sz_block);
                 var mj = new Span<int>(matrix, offset_mj, sz_block);
 
-                BlockFloydWarshall_01_Procedure(ij, im, mj, block_size);
+                BlockFloydWarshall_GS_Procedure(ij, im, mj, block_size);
               }
             }
           }
@@ -208,7 +208,7 @@ namespace Code.Benchmarks
 
         var mm = new Span<int>(matrix, offset_mm, sz_block);
 
-        BlockFloydWarshall_01_Procedure(mm, mm, mm, block_size);
+        BlockFloydWarshall_GS_Procedure(mm, mm, mm, block_size);
 
         Task.Run(() => 
         {
@@ -224,7 +224,7 @@ namespace Code.Benchmarks
                 var im = new Span<int>(matrix, offset_im, sz_block);
                 var mi = new Span<int>(matrix, offset_mi, sz_block);
 
-                BlockFloydWarshall_01_Procedure(im, im, mm, block_size);
+                BlockFloydWarshall_GS_Procedure(im, im, mm, block_size);
               }, 
               TaskCreationOptions.AttachedToParent).Start();
 
@@ -233,7 +233,7 @@ namespace Code.Benchmarks
                 var im = new Span<int>(matrix, offset_im, sz_block);
                 var mi = new Span<int>(matrix, offset_mi, sz_block);
 
-                BlockFloydWarshall_01_Procedure(mi, mm, mi, block_size);
+                BlockFloydWarshall_GS_Procedure(mi, mm, mi, block_size);
               }, 
               TaskCreationOptions.AttachedToParent).Start();
             }
@@ -260,7 +260,7 @@ namespace Code.Benchmarks
                     var ij = new Span<int>(matrix, offset_ij, sz_block);
                     var mj = new Span<int>(matrix, offset_mj, sz_block);
 
-                    BlockFloydWarshall_01_Procedure(ij, im, mj, block_size);
+                    BlockFloydWarshall_GS_Procedure(ij, im, mj, block_size);
                   }, 
                   TaskCreationOptions.AttachedToParent).Start();
                 }
@@ -272,95 +272,178 @@ namespace Code.Benchmarks
       }
     }
 
-    // // + graph specific optimization
-    // // + vectorization
-    // [Benchmark]
-    // [ArgumentsSource(nameof(Arguments))]
-    // public void FloydWarshall_03(int[] matrix, int sz)
-    // {
-    //   for (var k = 0; k < sz; ++k)
-    //   {
-    //     for (var i = 0; i < sz; ++i)
-    //     {
-    //       if (matrix[i * sz + k] == Constants.NO_EDGE)
-    //       {
-    //         continue;
-    //       }
+    private static void BlockFloydWarshall_GS_Vectors_Procedure(
+      Span<int> ij, Span<int> ik, Span<int> kj, int block_size)
+    {
+      for (var k = 0; k < block_size; ++k)
+      {
+        for (var i = 0; i < block_size; ++i)
+        {
+          var ik_vec = new Vector<int>(ik[i * block_size + k]);
 
-    //       var ik_vec = new Vector<int>(matrix[i * sz + k]);
+          var j = 0;
+          for (; j < block_size - Vector<int>.Count; j += Vector<int>.Count)
+          {
+            var ij_vec = new Vector<int>(ij.Slice(i * block_size + j, Vector<int>.Count));
+            var ikj_vec = new Vector<int>(kj.Slice(k * block_size + j, Vector<int>.Count)) + ik_vec;
 
-    //       var j = 0;
-    //       for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
-    //       {
-    //         var ij_vec = new Vector<int>(matrix, i * sz + j);
-    //         var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
+            var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
+            if (lt_vec == new Vector<int>(-1))
+            {
+              continue;
+            }
 
-    //         var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-    //         if (lt_vec == new Vector<int>(-1))
-    //         {
-    //           continue;
-    //         }
+            var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
+            r_vec.CopyTo(ij.Slice(i * block_size + j, Vector<int>.Count));
+          }
 
-    //         var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-    //         r_vec.CopyTo(matrix, i * sz + j);
-    //       }
+          for (; j < block_size; ++j)
+          {
+            var distance = ik[i * block_size + k] + kj[k * block_size + j];
+            if (ij[i * block_size + j] > distance)
+            {
+              ij[i * block_size + j] = distance;
+            }
+          }
+        }
+      }
+    }
 
-    //       for (; j < sz; ++j)
-    //       {
-    //         var distance = matrix[i * sz + k] + matrix[k * sz + j];
-    //         if (matrix[i * sz + j] > distance)
-    //         {
-    //           matrix[i * sz + j] = distance;
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
+    // + graph specific optimization
+    // + vectorization
+    [Benchmark]
+    [ArgumentsSource(nameof(Arguments))]
+    public void BlockFloydWarshall_03(int[] matrix, int block_count, int block_size)
+    {
+      var sz_block = block_size * block_size;
+      var sz_block_row = block_count * sz_block;
 
-    // // + graph specific optimization
-    // // + vectorization
-    // // + parallel
-    // [Benchmark]
-    // [ArgumentsSource(nameof(Arguments))]
-    // public void FloydWarshall_04(int[] matrix, int sz)
-    // {
-    //   for (var k = 0; k < sz; ++k)
-    //   {
-    //     Parallel.For(0, sz, i =>
-    //     {
-    //       if (matrix[i * sz + k] == Constants.NO_EDGE)
-    //       {
-    //         return;
-    //       }
+      for (var m = 0; m < block_count; ++m) 
+      {
+        var offset_mm = m * sz_block_row + m * sz_block;
 
-    //       var ik_vec = new Vector<int>(matrix[i * sz + k]);
+        var mm = new Span<int>(matrix, offset_mm, sz_block);
 
-    //       var j = 0;
-    //       for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
-    //       {
-    //         var ij_vec = new Vector<int>(matrix, i * sz + j);
-    //         var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
+        BlockFloydWarshall_GS_Vectors_Procedure(mm, mm, mm, block_size);
 
-    //         var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-    //         if (lt_vec == new Vector<int>(-1))
-    //         {
-    //           continue;
-    //         }
+        for (var i = 0; i < block_count; ++i) 
+        {
+          if (i != m) 
+          {
+            var offset_im = i * sz_block_row + m * sz_block;
+            var offset_mi = m * sz_block_row + i * sz_block;
+        
+            var im = new Span<int>(matrix, offset_im, sz_block);
+            var mi = new Span<int>(matrix, offset_mi, sz_block);
 
-    //         var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-    //         r_vec.CopyTo(matrix, i * sz + j);
-    //       }
+            BlockFloydWarshall_GS_Vectors_Procedure(im, im, mm, block_size);
+            BlockFloydWarshall_GS_Vectors_Procedure(mi, mm, mi, block_size);
+          }
+        }
+        for (var i = 0; i < block_count; ++i) 
+        {
+          if (i != m) 
+          {
+            var offset_im = i * sz_block_row + m * sz_block;
 
-    //       for (; j < sz; ++j)
-    //       {
-    //         var distance = matrix[i * sz + k] + matrix[k * sz + j];
-    //         if (matrix[i * sz + j] > distance)
-    //         {
-    //           matrix[i * sz + j] = distance;
-    //         }
-    //       }
-    //     });
-    //   }
-    // }
+            var im = new Span<int>(matrix, offset_im, sz_block);
+
+            for (var j = 0; j < block_count; ++j) 
+            {
+              if (j != m) 
+              {
+                var offset_ij = i * sz_block_row + j * sz_block;
+                var offset_mj = m * sz_block_row + j * sz_block;
+        
+                var ij = new Span<int>(matrix, offset_ij, sz_block);
+                var mj = new Span<int>(matrix, offset_mj, sz_block);
+
+                BlockFloydWarshall_GS_Vectors_Procedure(ij, im, mj, block_size);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // + graph specific optimization
+    // + vectorization
+    // + parallel
+    [Benchmark]
+    [ArgumentsSource(nameof(Arguments))]
+    public void BlockFloydWarshall_04(int[] matrix, int block_count, int block_size)
+    {
+      var sz_block = block_size * block_size;
+      var sz_block_row = block_count * sz_block;
+
+      for (var m = 0; m < block_count; ++m) 
+      {
+        var offset_mm = m * sz_block_row + m * sz_block;
+
+        var mm = new Span<int>(matrix, offset_mm, sz_block);
+
+        BlockFloydWarshall_GS_Vectors_Procedure(mm, mm, mm, block_size);
+
+        Task.Run(() => 
+        {
+          for (var i = 0; i < block_count; ++i) 
+          {
+            if (i != m) 
+            {
+              var offset_im = i * sz_block_row + m * sz_block;
+              var offset_mi = m * sz_block_row + i * sz_block;
+          
+              new Task(() => {
+                var mm = new Span<int>(matrix, offset_mm, sz_block);
+                var im = new Span<int>(matrix, offset_im, sz_block);
+                var mi = new Span<int>(matrix, offset_mi, sz_block);
+
+                BlockFloydWarshall_GS_Vectors_Procedure(im, im, mm, block_size);
+              }, 
+              TaskCreationOptions.AttachedToParent).Start();
+
+              new Task(() => {
+                var mm = new Span<int>(matrix, offset_mm, sz_block);
+                var im = new Span<int>(matrix, offset_im, sz_block);
+                var mi = new Span<int>(matrix, offset_mi, sz_block);
+
+                BlockFloydWarshall_GS_Vectors_Procedure(mi, mm, mi, block_size);
+              }, 
+              TaskCreationOptions.AttachedToParent).Start();
+            }
+          }
+        })
+        .Wait();
+
+        Task.Run(() => 
+        {
+          for (var i = 0; i < block_count; ++i) 
+          {
+            if (i != m) 
+            {
+              var offset_im = i * sz_block_row + m * sz_block;
+              for (var j = 0; j < block_count; ++j) 
+              {
+                if (j != m) 
+                {
+                  var offset_ij = i * sz_block_row + j * sz_block;
+                  var offset_mj = m * sz_block_row + j * sz_block;
+
+                  new Task(() => {
+                    var im = new Span<int>(matrix, offset_im, sz_block);
+                    var ij = new Span<int>(matrix, offset_ij, sz_block);
+                    var mj = new Span<int>(matrix, offset_mj, sz_block);
+
+                    BlockFloydWarshall_GS_Vectors_Procedure(ij, im, mj, block_size);
+                  }, 
+                  TaskCreationOptions.AttachedToParent).Start();
+                }
+              }
+            }
+          }
+        })
+        .Wait();
+      }
+    }
   }
 }
