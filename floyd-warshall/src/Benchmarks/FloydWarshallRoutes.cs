@@ -86,7 +86,7 @@ namespace Code.Benchmarks
             var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
             r_vec.CopyTo(matrix, i * sz + j);
 
-            var rk_vec = Vector.ConditionalSelect(lt_vec, ij_vec, k_vec);
+            var rk_vec = Vector.ConditionalSelect(lt_vec, new Vector<int>(routes, i * sz + j), k_vec);
             rk_vec.CopyTo(routes, i * sz + j);
           }
 
@@ -96,7 +96,7 @@ namespace Code.Benchmarks
             if (matrix[i * sz + j] > distance)
             {
               matrix[i * sz + j] = distance;
-              routes[i * sz + j] = distance;
+              routes[i * sz + j] = k;
             }
           }
         }

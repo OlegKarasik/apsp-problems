@@ -9,6 +9,7 @@ namespace Tests.Benchmarks
   {
     [Theory]
     [InlineData("18-14", "00")]
+    [InlineData("18-14", "01")]
     public void Variants(string input, string variant)
     {
       // Arrange
