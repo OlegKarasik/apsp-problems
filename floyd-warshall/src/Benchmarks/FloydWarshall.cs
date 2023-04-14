@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
 using Code.Utilz;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Code.Benchmarks
 {
+  [HardwareCounters(HardwareCounter.CacheMisses, HardwareCounter.LlcMisses)]
   public class FloydWarshall
   {
     public static IEnumerable<object[]> Arguments()

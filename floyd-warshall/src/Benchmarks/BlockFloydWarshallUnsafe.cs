@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Code.Benchmarks
 {
-  [HardwareCounters(HardwareCounter.CacheMisses, HardwareCounter.BranchMispredictions, HardwareCounter.LlcMisses)]
+  [HardwareCounters(HardwareCounter.CacheMisses, HardwareCounter.LlcMisses)]
   public class BlockFloydWarshallUnsafe
   {
     public static IEnumerable<object[]> Arguments()

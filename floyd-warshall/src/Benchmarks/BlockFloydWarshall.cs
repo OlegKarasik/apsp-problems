@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
 using Code.Utilz;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Code.Benchmarks
 {
-  [MemoryDiagnoser]
+  [HardwareCounters(HardwareCounter.CacheMisses, HardwareCounter.LlcMisses)]
   public class BlockFloydWarshall
   {
     public static IEnumerable<object[]> Arguments()
