@@ -32,7 +32,7 @@ namespace Code.Benchmarks
             var (matrix, size) = MatrixHelpers.FromInputFile(i);
             return blocks.Select(j => 
             {
-              var (block_matrix, block_count, block_size) = BlockMatrixHelpers.ConvertMatrixToBlockMatrix(matrix, size, j);
+              var (block_matrix, block_count, block_size, _) = BlockMatrixHelpers.ConvertMatrixToBlockMatrix(matrix, size, j);
               return new object[] { block_matrix, block_count, block_size };
             });
           })
