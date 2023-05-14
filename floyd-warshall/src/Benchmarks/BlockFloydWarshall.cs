@@ -281,6 +281,11 @@ namespace Code.Benchmarks
       {
         for (var i = 0; i < block_size; ++i)
         {
+          if (ik[i * block_size + k] == Constants.NO_EDGE)
+          {
+            continue;
+          }
+
           var ik_vec = new Vector<int>(ik[i * block_size + k]);
 
           var j = 0;
