@@ -4,8 +4,8 @@ namespace Code.Utilz
 {
   public static class BlockMatrixHelpers
   {
-    public static (int[] matrix, int block_count, int block_size, int orign_size) ConvertMatrixToBlockMatrix(
-      int[] matrix, int size, int block_size)
+    public static (long[] matrix, int block_count, int block_size, int orign_size) ConvertMatrixToBlockMatrix(
+      long[] matrix, int size, int block_size)
     {
       var orign_size = size;
       var block_count = size / block_size;
@@ -18,12 +18,12 @@ namespace Code.Utilz
       var sz_block = block_size * block_size;
       var sz_block_row = block_count * sz_block;
 
-      var result = new int[size * size];
+      var result = new long[size * size];
       Array.Fill(result, Constants.NO_EDGE);
 
-      for (int i = 0; i < orign_size; i++)
+      for (var i = 0; i < orign_size; i++)
       {
-        for (int j = 0; j < orign_size; j++)
+        for (var j = 0; j < orign_size; j++)
         {
           var b_i = i / block_size; var b_j = j / block_size;
           var b_x = i % block_size; var b_y = j % block_size;
@@ -35,16 +35,16 @@ namespace Code.Utilz
       return (result, block_count, block_size, orign_size);
     }
 
-    public static (int[] matrix, int size) ConvertBlockMatrixToMatrix(
-      int[] matrix, int block_count, int block_size, int orign_size)
+    public static (long[] matrix, int size) ConvertBlockMatrixToMatrix(
+      long[] matrix, int block_count, int block_size, int orign_size)
     {
       var sz_block = block_size * block_size;
       var sz_block_row = block_count * sz_block;
 
-      var result = new int[orign_size * orign_size];
-      for (int i = 0; i < orign_size; i++)
+      var result = new long[orign_size * orign_size];
+      for (var i = 0; i < orign_size; i++)
       {
-        for (int j = 0; j < orign_size; j++)
+        for (var j = 0; j < orign_size; j++)
         {
           var b_i = i / block_size; var b_j = j / block_size;
           var b_x = i % block_size; var b_y = j % block_size;

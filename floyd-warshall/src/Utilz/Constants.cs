@@ -2,6 +2,6 @@ namespace Code.Utilz
 {
   public static class Constants
   {
-    public const int NO_EDGE = int.MaxValue / 2 - 1;
+    public const long NO_EDGE = long.MaxValue / 2 - 1;
   }
 }

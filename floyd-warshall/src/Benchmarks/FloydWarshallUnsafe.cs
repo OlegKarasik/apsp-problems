@@ -37,7 +37,7 @@ namespace Code.Benchmarks
     // baseline
     [Benchmark(Baseline = true)]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_00(int[] matrix, int sz)
+    public void FloydWarshall_00(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
@@ -45,13 +45,13 @@ namespace Code.Benchmarks
         {
           for (var j = 0; j < sz; ++j)
           {
-            ref int ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             ij_ref = ref Unsafe.Add(ref ij_ref, i * sz + j);
 
-            ref int ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             ik_ref = ref Unsafe.Add(ref ik_ref, i * sz + k);
 
-            ref int kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             kj_ref = ref Unsafe.Add(ref kj_ref, k * sz + j);
        
             var distance = ik_ref + kj_ref;
@@ -67,13 +67,13 @@ namespace Code.Benchmarks
     // + graph specific optimization
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_01(int[] matrix, int sz)
+    public void FloydWarshall_01(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
         for (var i = 0; i < sz; ++i)
         {
-          ref int ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+          ref long ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
           ik_ref = ref Unsafe.Add(ref ik_ref, i * sz + k);
 
           if (ik_ref == Constants.NO_EDGE)
@@ -82,10 +82,10 @@ namespace Code.Benchmarks
           }
           for (var j = 0; j < sz; ++j)
           {
-            ref int ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             ij_ref = ref Unsafe.Add(ref ij_ref, i * sz + j);
 
-            ref int kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             kj_ref = ref Unsafe.Add(ref kj_ref, k * sz + j);
        
             var distance = ik_ref + kj_ref;
@@ -102,13 +102,13 @@ namespace Code.Benchmarks
     // + parallel
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_02(int[] matrix, int sz)
+    public void FloydWarshall_02(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
         Parallel.For(0, sz, i =>
         {
-          ref int ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+          ref long ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
           ik_ref = ref Unsafe.Add(ref ik_ref, i * sz + k);
 
           if (ik_ref == Constants.NO_EDGE)
@@ -117,10 +117,10 @@ namespace Code.Benchmarks
           }
           for (var j = 0; j < sz; ++j)
           {
-            ref int ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             ij_ref = ref Unsafe.Add(ref ij_ref, i * sz + j);
 
-            ref int kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             kj_ref = ref Unsafe.Add(ref kj_ref, k * sz + j);
        
             var distance = ik_ref + kj_ref;
@@ -137,13 +137,13 @@ namespace Code.Benchmarks
     // + vectorization
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_03(int[] matrix, int sz)
+    public void FloydWarshall_03(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
         for (var i = 0; i < sz; ++i)
         {
-          ref int ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+          ref long ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
           ik_ref = ref Unsafe.Add(ref ik_ref, i * sz + k);
 
           if (ik_ref == Constants.NO_EDGE)
@@ -151,39 +151,39 @@ namespace Code.Benchmarks
             continue;
           }
 
-          var ik_vec = new Vector<int>(ik_ref);
+          var ik_vec = new Vector<long>(ik_ref);
 
           var j = 0;
-          for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
+          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
           {
-            ref int ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             ij_ref = ref Unsafe.Add(ref ij_ref, i * sz + j);
 
-            ref int kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             kj_ref = ref Unsafe.Add(ref kj_ref, k * sz + j);
 
-            var ij_vec = new Vector<int>(MemoryMarshal.CreateSpan(ref ij_ref, Vector<int>.Count));
-            var ikj_vec = new Vector<int>(MemoryMarshal.CreateSpan(ref kj_ref, Vector<int>.Count)) + ik_vec;
+            var ij_vec = new Vector<long>(MemoryMarshal.CreateSpan(ref ij_ref, Vector<long>.Count));
+            var ikj_vec = new Vector<long>(MemoryMarshal.CreateSpan(ref kj_ref, Vector<long>.Count)) + ik_vec;
 
             var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<int>(-1))
+            if (lt_vec == new Vector<long>(-1))
             {
               continue;
             }
 
             var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-            r_vec.CopyTo(MemoryMarshal.CreateSpan(ref ij_ref, Vector<int>.Count));
+            r_vec.CopyTo(MemoryMarshal.CreateSpan(ref ij_ref, Vector<long>.Count));
           }
 
           for (; j < sz; ++j)
           {
-            ref int _ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long _ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             _ij_ref = ref Unsafe.Add(ref _ij_ref, i * sz + j);
 
-            ref int _ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long _ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             _ik_ref = ref Unsafe.Add(ref _ik_ref, i * sz + k);
 
-            ref int _kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long _kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             _kj_ref = ref Unsafe.Add(ref _kj_ref, k * sz + j);
        
             var distance = _ik_ref + _kj_ref;
@@ -201,13 +201,13 @@ namespace Code.Benchmarks
     // + parallel
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_04(int[] matrix, int sz)
+    public void FloydWarshall_04(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
         Parallel.For(0, sz, i =>
         {
-          ref int ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+          ref long ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
           ik_ref = ref Unsafe.Add(ref ik_ref, i * sz + k);
 
           if (ik_ref == Constants.NO_EDGE)
@@ -215,39 +215,39 @@ namespace Code.Benchmarks
             return;
           }
 
-          var ik_vec = new Vector<int>(ik_ref);
+          var ik_vec = new Vector<long>(ik_ref);
 
           var j = 0;
-          for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
+          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
           {
-            ref int ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             ij_ref = ref Unsafe.Add(ref ij_ref, i * sz + j);
 
-            ref int kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             kj_ref = ref Unsafe.Add(ref kj_ref, k * sz + j);
 
-            var ij_vec = new Vector<int>(MemoryMarshal.CreateSpan(ref ij_ref, Vector<int>.Count));
-            var ikj_vec = new Vector<int>(MemoryMarshal.CreateSpan(ref kj_ref, Vector<int>.Count)) + ik_vec;
+            var ij_vec = new Vector<long>(MemoryMarshal.CreateSpan(ref ij_ref, Vector<long>.Count));
+            var ikj_vec = new Vector<long>(MemoryMarshal.CreateSpan(ref kj_ref, Vector<long>.Count)) + ik_vec;
 
             var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<int>(-1))
+            if (lt_vec == new Vector<long>(-1))
             {
               continue;
             }
 
             var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-            r_vec.CopyTo(MemoryMarshal.CreateSpan(ref ij_ref, Vector<int>.Count));
+            r_vec.CopyTo(MemoryMarshal.CreateSpan(ref ij_ref, Vector<long>.Count));
           }
 
           for (; j < sz; ++j)
           {
-            ref int _ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long _ij_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             _ij_ref = ref Unsafe.Add(ref _ij_ref, i * sz + j);
 
-            ref int _ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long _ik_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             _ik_ref = ref Unsafe.Add(ref _ik_ref, i * sz + k);
 
-            ref int _kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
+            ref long _kj_ref = ref MemoryMarshal.GetArrayDataReference(matrix);
             _kj_ref = ref Unsafe.Add(ref _kj_ref, k * sz + j);
        
             var distance = _ik_ref + _kj_ref;

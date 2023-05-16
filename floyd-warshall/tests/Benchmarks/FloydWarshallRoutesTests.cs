@@ -89,6 +89,7 @@ namespace Tests.Benchmarks
       {
         "00" => FloydWarshallRoutes.RebuildRoute_00(routes, sz, i, j),
         "01" => FloydWarshallRoutes.RebuildRoute_01(routes, sz, i, j),
+        _ => throw new NotImplementedException(),
       };
 
       // Assert

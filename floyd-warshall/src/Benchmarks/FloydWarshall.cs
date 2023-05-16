@@ -16,8 +16,8 @@ namespace Code.Benchmarks
     {
       var inputs = new[]
       {
-        $@"{Environment.CurrentDirectory}/Data/300-35880.input",
-        $@"{Environment.CurrentDirectory}/Data/600-143760.input",
+        //$@"{Environment.CurrentDirectory}/Data/300-35880.input",
+        //$@"{Environment.CurrentDirectory}/Data/600-143760.input",
         $@"{Environment.CurrentDirectory}/Data/1200-575520.input",
         $@"{Environment.CurrentDirectory}/Data/2400-2303040.input",
         $@"{Environment.CurrentDirectory}/Data/4800-9214080.input"
@@ -35,7 +35,7 @@ namespace Code.Benchmarks
     // baseline
     [Benchmark(Baseline = true)]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_00(int[] matrix, int sz)
+    public void FloydWarshall_00(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
@@ -56,7 +56,7 @@ namespace Code.Benchmarks
     // + graph specific optimization
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_01(int[] matrix, int sz)
+    public void FloydWarshall_01(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
@@ -82,7 +82,7 @@ namespace Code.Benchmarks
     // + parallel
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_02(int[] matrix, int sz)
+    public void FloydWarshall_02(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
@@ -108,7 +108,7 @@ namespace Code.Benchmarks
     // + vectorization
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_03(int[] matrix, int sz)
+    public void FloydWarshall_03(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
@@ -119,16 +119,16 @@ namespace Code.Benchmarks
             continue;
           }
 
-          var ik_vec = new Vector<int>(matrix[i * sz + k]);
+          var ik_vec = new Vector<long>(matrix[i * sz + k]);
 
           var j = 0;
-          for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
+          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
           {
-            var ij_vec = new Vector<int>(matrix, i * sz + j);
-            var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
+            var ij_vec = new Vector<long>(matrix, i * sz + j);
+            var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
 
             var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<int>(-1))
+            if (lt_vec == new Vector<long>(-1))
             {
               continue;
             }
@@ -154,7 +154,7 @@ namespace Code.Benchmarks
     // + parallel
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshall_04(int[] matrix, int sz)
+    public void FloydWarshall_04(long[] matrix, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
@@ -165,16 +165,16 @@ namespace Code.Benchmarks
             return;
           }
 
-          var ik_vec = new Vector<int>(matrix[i * sz + k]);
+          var ik_vec = new Vector<long>(matrix[i * sz + k]);
 
           var j = 0;
-          for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
+          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
           {
-            var ij_vec = new Vector<int>(matrix, i * sz + j);
-            var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
+            var ij_vec = new Vector<long>(matrix, i * sz + j);
+            var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
 
             var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<int>(-1))
+            if (lt_vec == new Vector<long>(-1))
             {
               continue;
             }

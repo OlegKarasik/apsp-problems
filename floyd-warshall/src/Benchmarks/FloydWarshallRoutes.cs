@@ -33,7 +33,7 @@ namespace Code.Benchmarks
     // baseline
     [Benchmark(Baseline = true)]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshallRoutes_00(int[] matrix, int[] routes, int sz)
+    public void FloydWarshallRoutes_00(long[] matrix, long[] routes, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
@@ -56,11 +56,11 @@ namespace Code.Benchmarks
     // + vectorization
     [Benchmark]
     [ArgumentsSource(nameof(Arguments))]
-    public void FloydWarshallRoutes_01(int[] matrix, int[] routes, int sz)
+    public void FloydWarshallRoutes_01(long[] matrix, long[] routes, int sz)
     {
       for (var k = 0; k < sz; ++k)
       {
-        var k_vec = new Vector<int>(k);
+        var k_vec = new Vector<long>(k);
 
         for (var i = 0; i < sz; ++i)
         {
@@ -69,16 +69,16 @@ namespace Code.Benchmarks
             continue;
           }
 
-          var ik_vec = new Vector<int>(matrix[i * sz + k]);
+          var ik_vec = new Vector<long>(matrix[i * sz + k]);
 
           var j = 0;
-          for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
+          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
           {
-            var ij_vec = new Vector<int>(matrix, i * sz + j);
-            var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
+            var ij_vec = new Vector<long>(matrix, i * sz + j);
+            var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
 
             var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<int>(-1))
+            if (lt_vec == new Vector<long>(-1))
             {
               continue;
             }
@@ -86,7 +86,7 @@ namespace Code.Benchmarks
             var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
             r_vec.CopyTo(matrix, i * sz + j);
 
-            var rk_vec = Vector.ConditionalSelect(lt_vec, new Vector<int>(routes, i * sz + j), k_vec);
+            var rk_vec = Vector.ConditionalSelect(lt_vec, new Vector<long>(routes, i * sz + j), k_vec);
             rk_vec.CopyTo(routes, i * sz + j);
           }
 
@@ -103,9 +103,9 @@ namespace Code.Benchmarks
       }
     }
 
-    public static IEnumerable<int> RebuildRoute_00(int[] routes, int sz, int i, int j)
+    public static IEnumerable<long> RebuildRoute_00(long[] routes, int sz, int i, int j)
     {
-      var x = new LinkedList<int>();
+      var x = new LinkedList<long>();
 
       var z = routes[i * sz + j];
       while (z != Constants.NO_EDGE) 
@@ -120,9 +120,9 @@ namespace Code.Benchmarks
       return x;
     }
 
-    public static IEnumerable<int> RebuildRoute_01(int[] routes, int sz, int i, int j)
+    public static IEnumerable<long> RebuildRoute_01(long[] routes, int sz, int i, int j)
     {
-      var x = new int[sz];
+      var x = new long[sz];
       var y = sz - 1;
 
       x[y--] = j;
@@ -136,10 +136,10 @@ namespace Code.Benchmarks
 
       x[y] = i;
 
-      return new ArraySegment<int>(x, y, sz - y);
+      return new ArraySegment<long>(x, y, sz - y);
     }
 
-    public static IEnumerable<int> RebuildRoute_Reverse_00(int[] routes, int sz, int i, int j)
+    public static IEnumerable<long> RebuildRoute_Reverse_00(long[] routes, int sz, int i, int j)
     {
       yield return j;
 

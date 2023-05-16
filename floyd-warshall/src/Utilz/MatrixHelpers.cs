@@ -8,16 +8,16 @@ namespace Code.Utilz
 {
   public static class MatrixHelpers
   {
-    public static (int[] matrix, int size) Initialize(
+    public static (long[] matrix, int size) Initialize(
       int size)
     {
-      var matrix = new int[size * size];
+      var matrix = new long[size * size];
       Array.Fill(matrix, Constants.NO_EDGE);
 
       return (matrix, size);
     }
     
-    public static (int[] matrix, int size) FromInputFile(
+    public static (long[] matrix, int size) FromInputFile(
       string file)
     {
       if (string.IsNullOrWhiteSpace(file))
@@ -33,7 +33,7 @@ namespace Code.Utilz
       if (!int.TryParse(line, out var size))
         throw new Exception($"Can't read matrix size from '{line}'.");
 
-      var matrix = new int[size * size];
+      var matrix = new long[size * size];
 
       // Fill the whole matrix with NO_EDGE values
       // because we are reading only existing edges
@@ -46,9 +46,9 @@ namespace Code.Utilz
         if (!match.Success)
           throw new Exception($"Can't read <from> <to> <distance> from '{line}'.");
 
-        var from = int.Parse(match.Groups["from"].ValueSpan);
-        var to = int.Parse(match.Groups["to"].ValueSpan);
-        var distance = int.Parse(match.Groups["distance"].ValueSpan);
+        var from = long.Parse(match.Groups["from"].ValueSpan);
+        var to = long.Parse(match.Groups["to"].ValueSpan);
+        var distance = long.Parse(match.Groups["distance"].ValueSpan);
 
         matrix[from * size + to] = distance;
       }
@@ -58,7 +58,7 @@ namespace Code.Utilz
 
   public static class RoutesHelpers
   {
-    public static int[] FromInputFile(
+    public static long[] FromInputFile(
       string file, int i, int j)
     {
       if (string.IsNullOrWhiteSpace(file))
@@ -77,13 +77,13 @@ namespace Code.Utilz
         if (!match.Success)
           throw new Exception($"Can't read <from>:<to>=<route> from '{line}'.");
 
-        var from = int.Parse(match.Groups["from"].ValueSpan);
-        var to = int.Parse(match.Groups["to"].ValueSpan);
+        var from = long.Parse(match.Groups["from"].ValueSpan);
+        var to = long.Parse(match.Groups["to"].ValueSpan);
         if (from == i && to == j)
         {
           return match.Groups["route"].Value
             .Split(',')
-            .Select(x => int.Parse(x))
+            .Select(x => long.Parse(x))
             .ToArray();
         }
       }
