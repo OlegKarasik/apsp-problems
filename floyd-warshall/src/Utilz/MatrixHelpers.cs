@@ -1,7 +1,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Code.Utilz
@@ -54,40 +53,53 @@ namespace Code.Utilz
       }
       return (matrix, size);
     }
-  }
-
-  public static class RoutesHelpers
-  {
-    public static long[] FromInputFile(
-      string file, int i, int j)
+  
+    public static void SplitInPlace(
+      long[] matrix, int size, int block_size, out int block_count)
     {
-      if (string.IsNullOrWhiteSpace(file))
+      block_count = size / block_size;
+      if (size % block_size != 0)
       {
-        throw new ArgumentException(
-          $"'{nameof(file)}' cannot be null or whitespace.",
-          nameof(file));
+        throw new InvalidOperationException("Can't split matrix into uneven blocks");
       }
 
-      using var stream = new StreamReader(file);
+      var lineral_block_size = block_size * block_size;
+      var lineral_block_row_size = block_count * lineral_block_size;
 
-      string line = null;
-      while ((line = stream.ReadLine()) is not null)
+      var temp = new long[size * size];
+      for (var i = 0; i < size; i++)
       {
-        var match = Regex.Match(line, @"(?<from>\d+):(?<to>\d+)=(?<route>[\d,]+)");
-        if (!match.Success)
-          throw new Exception($"Can't read <from>:<to>=<route> from '{line}'.");
-
-        var from = long.Parse(match.Groups["from"].ValueSpan);
-        var to = long.Parse(match.Groups["to"].ValueSpan);
-        if (from == i && to == j)
+        for (var j = 0; j < size; j++)
         {
-          return match.Groups["route"].Value
-            .Split(',')
-            .Select(x => long.Parse(x))
-            .ToArray();
+          var b_i = i / block_size; var b_j = j / block_size;
+          var b_x = i % block_size; var b_y = j % block_size;
+
+          temp[b_i * lineral_block_row_size + b_j * lineral_block_size + b_x * block_size + b_y] = matrix[i * size + j];
         }
       }
-      throw new Exception($"The route {i}:{j} isn't found in the input file.");
+      Array.Copy(temp, matrix, size * size);
+    }
+
+    public static void JoinInPlace(
+      long[] matrix, int block_count, int block_size, out int size)
+    {
+      size = block_count * block_size;
+
+      var lineral_block_size = block_size * block_size;
+      var lineral_block_row_size = block_count * lineral_block_size;
+
+      var temp = new long[size * size];
+      for (var i = 0; i < size; i++)
+      {
+        for (var j = 0; j < size; j++)
+        {
+          var b_i = i / block_size; var b_j = j / block_size;
+          var b_x = i % block_size; var b_y = j % block_size;
+
+          temp[i * size + j] = matrix[b_i * lineral_block_row_size + b_j * lineral_block_size + b_x * block_size + b_y];
+        }
+      }
+      Array.Copy(temp, matrix, size * size);
     }
   }
 }
