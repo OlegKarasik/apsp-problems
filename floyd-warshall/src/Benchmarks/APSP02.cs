@@ -6,12 +6,13 @@ using System.Collections.Generic;
 
 namespace Code.Benchmarks
 {
-  [HardwareCounters(HardwareCounter.LlcMisses)]
-  public class FloydWarshallBenchmarks
+  public class APSP02
   {
     public static IEnumerable<string> ValuesForGraph() 
       => new[] 
         { 
+          "300-35880",
+          "600-143760",
           "1200-575520",
           "2400-2303040",
           "4800-9214080"
@@ -21,6 +22,7 @@ namespace Code.Benchmarks
     public string Graph;
 
     private long[] matrix;
+    private long[] matrix_routes;
     private int matrix_size;
 
     [GlobalSetup]
@@ -29,28 +31,23 @@ namespace Code.Benchmarks
       var (matrix, matrix_size) = MatrixHelpers.FromInputFile(
         $@"{Environment.CurrentDirectory}/Data/{this.Graph}.input");
 
+      var (matrix_routes, _) = MatrixHelpers.Initialize(matrix_size);
+
       this.matrix = matrix;
       this.matrix_size = matrix_size;
+      this.matrix_routes = matrix_routes;
     }
 
+    // aka FloydWarshallRoutes_00
+    //
     [Benchmark(Baseline = true)]
-    public void Baseline() 
-      => Algorithms.FloydWarshall.Baseline(this.matrix, this.matrix_size);
+    public void BaselineWithRoutes() 
+      => Algorithms.FloydWarshall.BaselineWithRoutes(this.matrix, this.matrix_routes, this.matrix_size);
 
+    // aka FloydWarshallRoutes_01
+    //
     [Benchmark]
-    public void SpartialOptimisation() 
-      => Algorithms.FloydWarshall.SpartialOptimisation(this.matrix, this.matrix_size);
-
-    [Benchmark]
-    public void VectorOptimisation() 
-      => Algorithms.FloydWarshall.VectorOptimisation(this.matrix, this.matrix_size);
-
-    [Benchmark]
-    public void ParallelOptimisation() 
-      => Algorithms.FloydWarshall.ParallelOptimisation(this.matrix, this.matrix_size);
-
-    [Benchmark]
-    public void ParallelVectorOptimisations() 
-      => Algorithms.FloydWarshall.ParallelVectorOptimisations(this.matrix, this.matrix_size);
+    public void SpartialVectorOptimisationsWithRoutes() 
+      => Algorithms.FloydWarshall.SpartialVectorOptimisationsWithRoutes(this.matrix, this.matrix_routes, this.matrix_size);
   }
 }

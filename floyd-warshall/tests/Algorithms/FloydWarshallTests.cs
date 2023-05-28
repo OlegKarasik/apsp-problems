@@ -10,6 +10,9 @@ namespace Tests.Algorithms
     [Theory]
     [InlineData("18-14", "Baseline")]
     [InlineData("18-14", "SpartialOptimisation")]
+    [InlineData("18-14", "SpartialParallelOptimisations")]
+    [InlineData("18-14", "SpartialVectorOptimisations")]
+    [InlineData("18-14", "SpartialParallelVectorOptimisations")]
     [InlineData("18-14", "ParallelOptimisation")]
     [InlineData("18-14", "VectorOptimisation")]
     [InlineData("18-14", "ParallelVectorOptimisations")]
@@ -27,6 +30,9 @@ namespace Tests.Algorithms
       {
         case "Baseline": FloydWarshall.Baseline(matrix, size); break;
         case "SpartialOptimisation": FloydWarshall.SpartialOptimisation(matrix, size); break;
+        case "SpartialParallelOptimisations": FloydWarshall.SpartialParallelOptimisations(matrix, size); break;
+        case "SpartialVectorOptimisations": FloydWarshall.SpartialVectorOptimisations(matrix, size); break;
+        case "SpartialParallelVectorOptimisations": FloydWarshall.SpartialParallelVectorOptimisations(matrix, size); break;
         case "ParallelOptimisation": FloydWarshall.ParallelOptimisation(matrix, size); break;
         case "VectorOptimisation": FloydWarshall.VectorOptimisation(matrix, size); break;
         case "ParallelVectorOptimisations": FloydWarshall.ParallelVectorOptimisations(matrix, size); break;

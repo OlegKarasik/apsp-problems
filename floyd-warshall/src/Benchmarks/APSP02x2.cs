@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Code.Benchmarks
 {
   [HardwareCounters(HardwareCounter.LlcMisses)]
-  public class BlockFloydWarshallBenchmarks
+  public class APSP02x2
   {
     public static IEnumerable<string> ValuesForGraph() 
       => new[] 

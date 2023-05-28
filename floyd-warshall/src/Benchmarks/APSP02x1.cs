@@ -7,19 +7,20 @@ using System.Collections.Generic;
 namespace Code.Benchmarks
 {
   [HardwareCounters(HardwareCounter.LlcMisses)]
-  public class FloydWarshallWithRoutesBenchmarks
+  public class APSP02x1
   {
     public static IEnumerable<string> ValuesForGraph() 
       => new[] 
         { 
-          "1200-575520"
+          "1200-575520",
+          "2400-2303040",
+          "4800-9214080"
         };
 
     [ParamsSource(nameof(ValuesForGraph))]
     public string Graph;
 
     private long[] matrix;
-    private long[] matrix_routes;
     private int matrix_size;
 
     [GlobalSetup]
@@ -28,19 +29,24 @@ namespace Code.Benchmarks
       var (matrix, matrix_size) = MatrixHelpers.FromInputFile(
         $@"{Environment.CurrentDirectory}/Data/{this.Graph}.input");
 
-      var (matrix_routes, _) = MatrixHelpers.Initialize(matrix_size);
-
       this.matrix = matrix;
       this.matrix_size = matrix_size;
-      this.matrix_routes = matrix_routes;
     }
 
     [Benchmark(Baseline = true)]
-    public void BaselineWithRoutes() 
-      => Algorithms.FloydWarshall.BaselineWithRoutes(this.matrix, this.matrix_routes, this.matrix_size);
+    public void Baseline() 
+      => Algorithms.FloydWarshall.Baseline(this.matrix, this.matrix_size);
 
     [Benchmark]
-    public void SpartialVectorOptimisationsWithRoutes() 
-      => Algorithms.FloydWarshall.SpartialVectorOptimisationsWithRoutes(this.matrix, this.matrix_routes, this.matrix_size);
+    public void VectorOptimisation() 
+      => Algorithms.FloydWarshall.VectorOptimisation(this.matrix, this.matrix_size);
+
+    [Benchmark]
+    public void ParallelOptimisation() 
+      => Algorithms.FloydWarshall.ParallelOptimisation(this.matrix, this.matrix_size);
+
+    [Benchmark]
+    public void ParallelVectorOptimisations() 
+      => Algorithms.FloydWarshall.ParallelVectorOptimisations(this.matrix, this.matrix_size);
   }
 }
