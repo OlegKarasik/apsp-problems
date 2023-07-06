@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using System.Threading;
-using Code.Utilz;
 
 namespace Code.Algorithms
 {
@@ -87,7 +86,6 @@ namespace Code.Algorithms
           }
         }
       }
-
       static void Procedure(
         Span<long> ij, Span<long> ik, Span<long> kj, int block_size)
       {
@@ -249,6 +247,7 @@ namespace Code.Algorithms
           }
         }
       }
+
       static void Procedure(
         Span<long> ij, Span<long> ik, Span<long> kj, int block_size)
       {
