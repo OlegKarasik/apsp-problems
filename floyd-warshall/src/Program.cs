@@ -1,21 +1,34 @@
 ﻿using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
-using Code.Utilz;
-using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Spectre.Console.Cli;
+using Code.Interface;
 
 namespace Problems
 {
   class Program
   {
-    static void Main(string[] args)
+    static int Main(string[] args)
     {
-      var config = ManualConfig.Create(DefaultConfig.Instance)
-        .WithOptions(ConfigOptions.JoinSummary);
+      var app = new CommandApp();
 
-      BenchmarkSwitcher.FromAssembly(Assembly.GetExecutingAssembly())
-        .Run(args, config);
+      app.Configure(config =>
+      {
+        config.AddBranch<RunSettings>("run", 
+          run => 
+          {
+            run.AddBranch<RunAlgorithmSettings>("algorithm", 
+              algorithm => 
+              {
+                algorithm.AddCommand<RunAlgorithmFloydWarshallCommand>("floyd-warshall");
+                algorithm.AddCommand<RunAlgorithmBlockedFloydWarshallCommand>("blocked-floyd-warshall");
+              });
+            run.AddCommand<RunBenchmarkCommand>("benchmark");
+          });
+      });
+
+      return app.Run(args);
     }
   }
 }

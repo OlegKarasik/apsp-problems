@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using Code.Benchmarks;
 using Code.Utilz;
@@ -6,7 +7,7 @@ using Xunit;
 
 namespace Tests.Utilz
 {
-  public class RoutesHelpersTests
+  public class RouteTests
   {
     // Important: this test can be executed only against existing paths!
     //
@@ -68,23 +69,26 @@ namespace Tests.Utilz
     public void Rebuild(string input, string variant, int i, int j)
     {
       // Arrange
-      var (routes, sz) = MatrixHelpers.FromInputFile(
-        $@"{Environment.CurrentDirectory}/Data/{input}.input.result.route");
+      using var inputStream = new FileStream(
+        $@"{Environment.CurrentDirectory}/Data/{input}.input.result.route", FileMode.Open, FileAccess.Read, FileShare.Read);
 
-      var route = RoutesHelpers.FromInputFile(
-        $@"{Environment.CurrentDirectory}/Data/{input}.input.result.routes", i, j);
+      using var routeStream = new FileStream(
+        $@"{Environment.CurrentDirectory}/Data/{input}.input.result.routes", FileMode.Open, FileAccess.Read, FileShare.Read);
+
+      var routes = Matrix.Read(inputStream);
+      var route  = Route.Read(routeStream, i, j);
 
       // Act
       var result = variant switch
       {
-        "RebuildRouteWithLinkedList" => RoutesHelpers.RebuildRouteWithLinkedList(routes, sz, i, j),
-        "RebuildRouteWithArray" => RoutesHelpers.RebuildRouteWithArray(routes, sz, i, j),
-        "RebuildRouteWithReverseYield" => RoutesHelpers.RebuildRouteWithReverseYield(routes, sz, i, j).Reverse(),
+        "RebuildRouteWithLinkedList" => Route.RebuildWithLinkedList(routes, i, j),
+        "RebuildRouteWithArray" => Route.RebuildWithArray(routes, i, j),
+        "RebuildRouteWithReverseYield" => Route.RebuildWithReverseYield(routes, i, j),
         _ => throw new NotImplementedException(),
       };
 
       // Assert
-      Assert.Equal(result, route);
+      Assert.Equal(result.Path, route.Path);
     }
   }
 }

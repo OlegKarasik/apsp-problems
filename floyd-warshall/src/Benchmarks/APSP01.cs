@@ -3,6 +3,7 @@ using BenchmarkDotNet.Diagnosers;
 using Code.Utilz;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Code.Benchmarks
 {
@@ -21,47 +22,45 @@ namespace Code.Benchmarks
     [ParamsSource(nameof(ValuesForGraph))]
     public string Graph;
 
-    private long[] matrix;
-    private int matrix_size;
+    private Matrix matrix;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-      var (matrix, matrix_size) = MatrixHelpers.FromInputFile(
-        $@"{Environment.CurrentDirectory}/Data/{this.Graph}.input");
+      using var inputStream = new FileStream(
+        $@"{Environment.CurrentDirectory}/Data/{this.Graph}.input", FileMode.Open, FileAccess.Read, FileShare.Read);
 
-      this.matrix = matrix;
-      this.matrix_size = matrix_size;
+      this.matrix = Matrix.Read(inputStream);
     }
 
     // aka FloydWarshall_00
     //
     [Benchmark(Baseline = true)]
     public void Baseline() 
-      => Algorithms.FloydWarshall.Baseline(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.Baseline(this.matrix);
 
     // aka FloydWarshall_01
     //
     [Benchmark]
     public void SpartialOptimisation() 
-      => Algorithms.FloydWarshall.SpartialOptimisation(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.SpartialOptimisation(this.matrix);
 
     // aka FloydWarshall_02
     //
     [Benchmark]
     public void SpartialParallelOptimisations() 
-      => Algorithms.FloydWarshall.SpartialParallelOptimisations(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.SpartialParallelOptimisations(this.matrix);
 
     // aka FloydWarshall_03
     //
     [Benchmark]
     public void SpartialVectorOptimisations() 
-      => Algorithms.FloydWarshall.SpartialVectorOptimisations(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.SpartialVectorOptimisations(this.matrix);
 
     // aka FloydWarshall_04
     //
     [Benchmark]
     public void SpartialParallelVectorOptimisations() 
-      => Algorithms.FloydWarshall.SpartialParallelVectorOptimisations(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.SpartialParallelVectorOptimisations(this.matrix);
   }
 }
