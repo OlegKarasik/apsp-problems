@@ -3,6 +3,7 @@ using BenchmarkDotNet.Diagnosers;
 using Code.Utilz;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Code.Benchmarks
 {
@@ -20,33 +21,31 @@ namespace Code.Benchmarks
     [ParamsSource(nameof(ValuesForGraph))]
     public string Graph;
 
-    private long[] matrix;
-    private int matrix_size;
+    private Matrix matrix;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-      var (matrix, matrix_size) = MatrixHelpers.FromInputFile(
-        $@"{Environment.CurrentDirectory}/Data/{this.Graph}.input");
+      using var inputStream = new FileStream(
+        $@"{Environment.CurrentDirectory}/Data/{this.Graph}.input", FileMode.Open, FileAccess.Read, FileShare.Read);
 
-      this.matrix = matrix;
-      this.matrix_size = matrix_size;
+      this.matrix = Matrix.Read(inputStream);
     }
 
     [Benchmark(Baseline = true)]
     public void Baseline() 
-      => Algorithms.FloydWarshall.Baseline(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.Baseline(this.matrix);
 
     [Benchmark]
     public void VectorOptimisation() 
-      => Algorithms.FloydWarshall.VectorOptimisation(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.VectorOptimisation(this.matrix);
 
     [Benchmark]
     public void ParallelOptimisation() 
-      => Algorithms.FloydWarshall.ParallelOptimisation(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.ParallelOptimisation(this.matrix);
 
     [Benchmark]
     public void ParallelVectorOptimisations() 
-      => Algorithms.FloydWarshall.ParallelVectorOptimisations(this.matrix, this.matrix_size);
+      => Algorithms.FloydWarshall.ParallelVectorOptimisations(this.matrix);
   }
 }

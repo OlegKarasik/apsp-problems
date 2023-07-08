@@ -3,6 +3,7 @@ using BenchmarkDotNet.Diagnosers;
 using Code.Utilz;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Code.Benchmarks
 {
@@ -29,37 +30,31 @@ namespace Code.Benchmarks
     [ParamsSource(nameof(ValuesForBlockSize))]
     public int BlockSize;
 
-    private long[] block_matrix;
-    private int block_size;
-    private int block_count;
+    private Matrix.Blocks blocks;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-      var (matrix, matrix_size) = MatrixHelpers.FromInputFile(
-        $@"{Environment.CurrentDirectory}/Data/{this.Graph}.input");
+      using var inputStream = new FileStream(
+        $@"{Environment.CurrentDirectory}/Data/{this.Graph}.input", FileMode.Open, FileAccess.Read, FileShare.Read);
 
-      MatrixHelpers.SplitInPlace(matrix, matrix_size, this.BlockSize, out var block_count);
-
-      this.block_matrix = matrix;
-      this.block_size = this.BlockSize;
-      this.block_count = block_count;
+      this.blocks = Matrix.Read(inputStream).SplitInBlocks(this.BlockSize);
     }
 
     [Benchmark(Baseline = true)]
     public void Baseline() 
-      => Algorithms.BlockFloydWarshall.Baseline(this.block_matrix, this.block_count, this.block_size);
+      => Algorithms.BlockedFloydWarshall.Baseline(this.blocks);
 
     [Benchmark]
     public void ParallelOptimisation() 
-      => Algorithms.BlockFloydWarshall.ParallelOptimisation(this.block_matrix, this.block_count, this.block_size);
+      => Algorithms.BlockedFloydWarshall.ParallelOptimisation(this.blocks);
 
     [Benchmark]
     public void VectorOptimisation() 
-      => Algorithms.BlockFloydWarshall.VectorOptimisation(this.block_matrix, this.block_count, this.block_size);
+      => Algorithms.BlockedFloydWarshall.VectorOptimisation(this.blocks);
     
     [Benchmark]
     public void ParallelVectorOptimisations() 
-      => Algorithms.BlockFloydWarshall.ParallelVectorOptimisations(this.block_matrix, this.block_count, this.block_size);
+      => Algorithms.BlockedFloydWarshall.ParallelVectorOptimisations(this.blocks);
  }
 }

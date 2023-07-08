@@ -2,305 +2,334 @@
 using System.Threading.Tasks;
 using Code.Utilz;
 
-namespace Code.Algorithms
+namespace Code.Algorithms;
+
+public static class FloydWarshall
 {
-  public static class FloydWarshall
+  public static void Baseline(Matrix matrix)
+    => Baseline(matrix.Data, matrix.Size);
+
+  public static void SpartialOptimisation(Matrix matrix)
+    => SpartialOptimisation(matrix.Data, matrix.Size);
+
+  public static void SpartialParallelOptimisations(Matrix matrix)
+    => SpartialParallelOptimisations(matrix.Data, matrix.Size);
+
+  public static void SpartialVectorOptimisations(Matrix matrix)
+    => SpartialVectorOptimisations(matrix.Data, matrix.Size);
+
+  public static void SpartialParallelVectorOptimisations(Matrix matrix)
+    => SpartialParallelVectorOptimisations(matrix.Data, matrix.Size);
+
+  public static void ParallelOptimisation(Matrix matrix)
+    => ParallelOptimisation(matrix.Data, matrix.Size);
+
+  public static void VectorOptimisation(Matrix matrix)
+    => VectorOptimisation(matrix.Data, matrix.Size);
+
+  public static void ParallelVectorOptimisations(Matrix matrix)
+    => ParallelVectorOptimisations(matrix.Data, matrix.Size);
+
+  public static void BaselineWithRoutes(Matrix matrix, Matrix routes)
+    => BaselineWithRoutes(matrix.Data, routes.Data, matrix.Size);
+
+  public static void SpartialVectorOptimisationsWithRoutes(Matrix matrix, Matrix routes)
+    => SpartialVectorOptimisationsWithRoutes(matrix.Data, routes.Data, matrix.Size);
+
+  private static void Baseline(long[] matrix, int sz)
   {
-    public static void Baseline(long[] matrix, int sz)
+    for (var k = 0; k < sz; ++k)
     {
-      for (var k = 0; k < sz; ++k)
+      for (var i = 0; i < sz; ++i)
       {
-        for (var i = 0; i < sz; ++i)
+        for (var j = 0; j < sz; ++j)
         {
-          for (var j = 0; j < sz; ++j)
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
           {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-            }
+            matrix[i * sz + j] = distance;
           }
         }
       }
     }
+  }
 
-    public static void SpartialOptimisation(long[] matrix, int sz)
+  private static void SpartialOptimisation(long[] matrix, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
     {
-      for (var k = 0; k < sz; ++k)
+      for (var i = 0; i < sz; ++i)
       {
-        for (var i = 0; i < sz; ++i)
+        if (matrix[i * sz + k] == Matrix.NO_EDGE)
         {
-          if (matrix[i * sz + k] == Constants.NO_EDGE)
+          continue;
+        }
+        for (var j = 0; j < sz; ++j)
+        {
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
           {
-            continue;
-          }
-          for (var j = 0; j < sz; ++j)
-          {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-            }
+            matrix[i * sz + j] = distance;
           }
         }
       }
     }
-  
-    public static void SpartialParallelOptimisations(long[] matrix, int sz)
+  }
+
+  private static void SpartialParallelOptimisations(long[] matrix, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
     {
-      for (var k = 0; k < sz; ++k)
+      Parallel.For(0, sz, i =>
       {
-        Parallel.For(0, sz, i =>
+        if (matrix[i * sz + k] == Matrix.NO_EDGE)
         {
-          if (matrix[i * sz + k] == Constants.NO_EDGE)
-          {
-            return;
-          }
-          for (var j = 0; j < sz; ++j)
-          {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-            }
-          }
-        });
-      }
-    }
-
-    public static void SpartialVectorOptimisations(long[] matrix, int sz)
-    {
-      for (var k = 0; k < sz; ++k)
-      {
-        for (var i = 0; i < sz; ++i)
+          return;
+        }
+        for (var j = 0; j < sz; ++j)
         {
-          if (matrix[i * sz + k] == Constants.NO_EDGE)
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
           {
-            continue;
-          }
-
-          var ik_vec = new Vector<long>(matrix[i * sz + k]);
-
-          var j = 0;
-          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
-          {
-            var ij_vec = new Vector<long>(matrix, i * sz + j);
-            var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
-
-            var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<long>(-1))
-            {
-              continue;
-            }
-
-            var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-            r_vec.CopyTo(matrix, i * sz + j);
-          }
-
-          for (; j < sz; ++j)
-          {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-            }
+            matrix[i * sz + j] = distance;
           }
         }
-      }
+      });
     }
+  }
 
-    public static void SpartialParallelVectorOptimisations(long[] matrix, int sz)
+  private static void SpartialVectorOptimisations(long[] matrix, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
     {
-      for (var k = 0; k < sz; ++k)
+      for (var i = 0; i < sz; ++i)
       {
-        Parallel.For(0, sz, i =>
+        if (matrix[i * sz + k] == Matrix.NO_EDGE)
         {
-          if (matrix[i * sz + k] == Constants.NO_EDGE)
-          {
-            return;
-          }
-
-          var ik_vec = new Vector<long>(matrix[i * sz + k]);
-
-          var j = 0;
-          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
-          {
-            var ij_vec = new Vector<long>(matrix, i * sz + j);
-            var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
-
-            var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<long>(-1))
-            {
-              continue;
-            }
-
-            var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-            r_vec.CopyTo(matrix, i * sz + j);
-          }
-
-          for (; j < sz; ++j)
-          {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-            }
-          }
-        });
-      }
-    }
-
-    public static void ParallelOptimisation(long[] matrix, int sz)
-    {
-      for (var k = 0; k < sz; ++k)
-      {
-        Parallel.For(0, sz, i =>
-        {
-          for (var j = 0; j < sz; ++j)
-          {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-            }
-          }
-        });
-      }
-    }
-  
-    public static void VectorOptimisation(long[] matrix, int sz)
-    {
-      for (var k = 0; k < sz; ++k)
-      {
-        for (var i = 0; i < sz; ++i)
-        {
-          var ik_vec = new Vector<long>(matrix[i * sz + k]);
-
-          var j = 0;
-          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
-          {
-            var ij_vec = new Vector<long>(matrix, i * sz + j);
-            var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
-
-            var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<long>(-1))
-            {
-              continue;
-            }
-
-            var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-            r_vec.CopyTo(matrix, i * sz + j);
-          }
-
-          for (; j < sz; ++j)
-          {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-            }
-          }
+          continue;
         }
-      }
-    }
 
-    public static void ParallelVectorOptimisations(long[] matrix, int sz)
-    {
-      for (var k = 0; k < sz; ++k)
-      {
-        Parallel.For(0, sz, i =>
+        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+
+        var j = 0;
+        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
         {
-          var ik_vec = new Vector<long>(matrix[i * sz + k]);
+          var ij_vec = new Vector<long>(matrix, i * sz + j);
+          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
 
-          var j = 0;
-          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
-          {
-            var ij_vec = new Vector<long>(matrix, i * sz + j);
-            var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
-
-            var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<long>(-1))
-            {
-              continue;
-            }
-
-            var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-            r_vec.CopyTo(matrix, i * sz + j);
-          }
-
-          for (; j < sz; ++j)
-          {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-            }
-          }
-        });
-      }
-    }
-
-    public static void BaselineWithRoutes(long[] matrix, long[] routes, int sz)
-    {
-      for (var k = 0; k < sz; ++k)
-      {
-        for (var i = 0; i < sz; ++i)
-        {
-          for (var j = 0; j < sz; ++j)
-          {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-              routes[i * sz + j] = k;
-            }
-          }
-        }
-      }
-    }
-  
-    public static void SpartialVectorOptimisationsWithRoutes(long[] matrix, long[] routes, int sz)
-    {
-      for (var k = 0; k < sz; ++k)
-      {
-        var k_vec = new Vector<long>(k);
-
-        for (var i = 0; i < sz; ++i)
-        {
-          if (matrix[i * sz + k] == Constants.NO_EDGE)
+          var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
+          if (lt_vec == new Vector<long>(-1))
           {
             continue;
           }
 
-          var ik_vec = new Vector<long>(matrix[i * sz + k]);
+          var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
+          r_vec.CopyTo(matrix, i * sz + j);
+        }
 
-          var j = 0;
-          for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        for (; j < sz; ++j)
+        {
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
           {
-            var ij_vec = new Vector<long>(matrix, i * sz + j);
-            var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+            matrix[i * sz + j] = distance;
+          }
+        }
+      }
+    }
+  }
 
-            var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-            if (lt_vec == new Vector<long>(-1))
-            {
-              continue;
-            }
+  private static void SpartialParallelVectorOptimisations(long[] matrix, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
+    {
+      Parallel.For(0, sz, i =>
+      {
+        if (matrix[i * sz + k] == Matrix.NO_EDGE)
+        {
+          return;
+        }
 
-            var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
-            r_vec.CopyTo(matrix, i * sz + j);
+        var ik_vec = new Vector<long>(matrix[i * sz + k]);
 
-            var rk_vec = Vector.ConditionalSelect(lt_vec, new Vector<long>(routes, i * sz + j), k_vec);
-            rk_vec.CopyTo(routes, i * sz + j);
+        var j = 0;
+        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        {
+          var ij_vec = new Vector<long>(matrix, i * sz + j);
+          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+
+          var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
+          if (lt_vec == new Vector<long>(-1))
+          {
+            continue;
           }
 
-          for (; j < sz; ++j)
+          var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
+          r_vec.CopyTo(matrix, i * sz + j);
+        }
+
+        for (; j < sz; ++j)
+        {
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
           {
-            var distance = matrix[i * sz + k] + matrix[k * sz + j];
-            if (matrix[i * sz + j] > distance)
-            {
-              matrix[i * sz + j] = distance;
-              routes[i * sz + j] = k;
-            }
+            matrix[i * sz + j] = distance;
+          }
+        }
+      });
+    }
+  }
+
+  private static void ParallelOptimisation(long[] matrix, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
+    {
+      Parallel.For(0, sz, i =>
+      {
+        for (var j = 0; j < sz; ++j)
+        {
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
+          {
+            matrix[i * sz + j] = distance;
+          }
+        }
+      });
+    }
+  }
+
+  private static void VectorOptimisation(long[] matrix, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
+    {
+      for (var i = 0; i < sz; ++i)
+      {
+        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+
+        var j = 0;
+        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        {
+          var ij_vec = new Vector<long>(matrix, i * sz + j);
+          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+
+          var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
+          if (lt_vec == new Vector<long>(-1))
+          {
+            continue;
+          }
+
+          var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
+          r_vec.CopyTo(matrix, i * sz + j);
+        }
+
+        for (; j < sz; ++j)
+        {
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
+          {
+            matrix[i * sz + j] = distance;
+          }
+        }
+      }
+    }
+  }
+
+  private static void ParallelVectorOptimisations(long[] matrix, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
+    {
+      Parallel.For(0, sz, i =>
+      {
+        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+
+        var j = 0;
+        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        {
+          var ij_vec = new Vector<long>(matrix, i * sz + j);
+          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+
+          var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
+          if (lt_vec == new Vector<long>(-1))
+          {
+            continue;
+          }
+
+          var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
+          r_vec.CopyTo(matrix, i * sz + j);
+        }
+
+        for (; j < sz; ++j)
+        {
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
+          {
+            matrix[i * sz + j] = distance;
+          }
+        }
+      });
+    }
+  }
+
+  private static void BaselineWithRoutes(long[] matrix, long[] routes, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
+    {
+      for (var i = 0; i < sz; ++i)
+      {
+        for (var j = 0; j < sz; ++j)
+        {
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
+          {
+            matrix[i * sz + j] = distance;
+            routes[i * sz + j] = k;
+          }
+        }
+      }
+    }
+  }
+
+  private static void SpartialVectorOptimisationsWithRoutes(long[] matrix, long[] routes, int sz)
+  {
+    for (var k = 0; k < sz; ++k)
+    {
+      var k_vec = new Vector<long>(k);
+
+      for (var i = 0; i < sz; ++i)
+      {
+        if (matrix[i * sz + k] == Matrix.NO_EDGE)
+        {
+          continue;
+        }
+
+        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+
+        var j = 0;
+        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        {
+          var ij_vec = new Vector<long>(matrix, i * sz + j);
+          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+
+          var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
+          if (lt_vec == new Vector<long>(-1))
+          {
+            continue;
+          }
+
+          var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
+          r_vec.CopyTo(matrix, i * sz + j);
+
+          var rk_vec = Vector.ConditionalSelect(lt_vec, new Vector<long>(routes, i * sz + j), k_vec);
+          rk_vec.CopyTo(routes, i * sz + j);
+        }
+
+        for (; j < sz; ++j)
+        {
+          var distance = matrix[i * sz + k] + matrix[k * sz + j];
+          if (matrix[i * sz + j] > distance)
+          {
+            matrix[i * sz + j] = distance;
+            routes[i * sz + j] = k;
           }
         }
       }
