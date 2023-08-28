@@ -36,7 +36,7 @@ public static class FloydWarshall
   public static void SpartialVectorOptimisationsWithRoutes(Matrix matrix, Matrix routes)
     => SpartialVectorOptimisationsWithRoutes(matrix.Data, routes.Data, matrix.Size);
 
-  private static void Baseline(long[] matrix, int sz)
+  private static void Baseline(int[] matrix, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
@@ -54,7 +54,7 @@ public static class FloydWarshall
     }
   }
 
-  private static void SpartialOptimisation(long[] matrix, int sz)
+  private static void SpartialOptimisation(int[] matrix, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
@@ -76,7 +76,7 @@ public static class FloydWarshall
     }
   }
 
-  private static void SpartialParallelOptimisations(long[] matrix, int sz)
+  private static void SpartialParallelOptimisations(int[] matrix, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
@@ -98,7 +98,7 @@ public static class FloydWarshall
     }
   }
 
-  private static void SpartialVectorOptimisations(long[] matrix, int sz)
+  private static void SpartialVectorOptimisations(int[] matrix, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
@@ -109,16 +109,16 @@ public static class FloydWarshall
           continue;
         }
 
-        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+        var ik_vec = new Vector<int>(matrix[i * sz + k]);
 
         var j = 0;
-        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
         {
-          var ij_vec = new Vector<long>(matrix, i * sz + j);
-          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+          var ij_vec = new Vector<int>(matrix, i * sz + j);
+          var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
 
           var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-          if (lt_vec == new Vector<long>(-1))
+          if (lt_vec == new Vector<int>(-1))
           {
             continue;
           }
@@ -139,7 +139,7 @@ public static class FloydWarshall
     }
   }
 
-  private static void SpartialParallelVectorOptimisations(long[] matrix, int sz)
+  private static void SpartialParallelVectorOptimisations(int[] matrix, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
@@ -150,16 +150,16 @@ public static class FloydWarshall
           return;
         }
 
-        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+        var ik_vec = new Vector<int>(matrix[i * sz + k]);
 
         var j = 0;
-        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
         {
-          var ij_vec = new Vector<long>(matrix, i * sz + j);
-          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+          var ij_vec = new Vector<int>(matrix, i * sz + j);
+          var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
 
           var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-          if (lt_vec == new Vector<long>(-1))
+          if (lt_vec == new Vector<int>(-1))
           {
             continue;
           }
@@ -180,7 +180,7 @@ public static class FloydWarshall
     }
   }
 
-  private static void ParallelOptimisation(long[] matrix, int sz)
+  private static void ParallelOptimisation(int[] matrix, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
@@ -198,22 +198,22 @@ public static class FloydWarshall
     }
   }
 
-  private static void VectorOptimisation(long[] matrix, int sz)
+  private static void VectorOptimisation(int[] matrix, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
       for (var i = 0; i < sz; ++i)
       {
-        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+        var ik_vec = new Vector<int>(matrix[i * sz + k]);
 
         var j = 0;
-        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
         {
-          var ij_vec = new Vector<long>(matrix, i * sz + j);
-          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+          var ij_vec = new Vector<int>(matrix, i * sz + j);
+          var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
 
           var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-          if (lt_vec == new Vector<long>(-1))
+          if (lt_vec == new Vector<int>(-1))
           {
             continue;
           }
@@ -234,22 +234,22 @@ public static class FloydWarshall
     }
   }
 
-  private static void ParallelVectorOptimisations(long[] matrix, int sz)
+  private static void ParallelVectorOptimisations(int[] matrix, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
       Parallel.For(0, sz, i =>
       {
-        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+        var ik_vec = new Vector<int>(matrix[i * sz + k]);
 
         var j = 0;
-        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
         {
-          var ij_vec = new Vector<long>(matrix, i * sz + j);
-          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+          var ij_vec = new Vector<int>(matrix, i * sz + j);
+          var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
 
           var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-          if (lt_vec == new Vector<long>(-1))
+          if (lt_vec == new Vector<int>(-1))
           {
             continue;
           }
@@ -270,7 +270,7 @@ public static class FloydWarshall
     }
   }
 
-  private static void BaselineWithRoutes(long[] matrix, long[] routes, int sz)
+  private static void BaselineWithRoutes(int[] matrix, int[] routes, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
@@ -289,11 +289,11 @@ public static class FloydWarshall
     }
   }
 
-  private static void SpartialVectorOptimisationsWithRoutes(long[] matrix, long[] routes, int sz)
+  private static void SpartialVectorOptimisationsWithRoutes(int[] matrix, int[] routes, int sz)
   {
     for (var k = 0; k < sz; ++k)
     {
-      var k_vec = new Vector<long>(k);
+      var k_vec = new Vector<int>(k);
 
       for (var i = 0; i < sz; ++i)
       {
@@ -302,16 +302,16 @@ public static class FloydWarshall
           continue;
         }
 
-        var ik_vec = new Vector<long>(matrix[i * sz + k]);
+        var ik_vec = new Vector<int>(matrix[i * sz + k]);
 
         var j = 0;
-        for (; j < sz - Vector<long>.Count; j += Vector<long>.Count)
+        for (; j < sz - Vector<int>.Count; j += Vector<int>.Count)
         {
-          var ij_vec = new Vector<long>(matrix, i * sz + j);
-          var ikj_vec = new Vector<long>(matrix, k * sz + j) + ik_vec;
+          var ij_vec = new Vector<int>(matrix, i * sz + j);
+          var ikj_vec = new Vector<int>(matrix, k * sz + j) + ik_vec;
 
           var lt_vec = Vector.LessThan(ij_vec, ikj_vec);
-          if (lt_vec == new Vector<long>(-1))
+          if (lt_vec == new Vector<int>(-1))
           {
             continue;
           }
@@ -319,7 +319,7 @@ public static class FloydWarshall
           var r_vec = Vector.ConditionalSelect(lt_vec, ij_vec, ikj_vec);
           r_vec.CopyTo(matrix, i * sz + j);
 
-          var rk_vec = Vector.ConditionalSelect(lt_vec, new Vector<long>(routes, i * sz + j), k_vec);
+          var rk_vec = Vector.ConditionalSelect(lt_vec, new Vector<int>(routes, i * sz + j), k_vec);
           rk_vec.CopyTo(routes, i * sz + j);
         }
 

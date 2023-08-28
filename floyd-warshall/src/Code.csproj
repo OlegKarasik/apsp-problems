@@ -11,6 +11,8 @@
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.5" />
     <PackageReference Include="Spectre.Console" Version="0.47.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.47.0" />
+    <PackageReference Include="Hast.Layer" Version="2.1.0" />
+    <PackageReference Include="Hast.Vitis.HardwareFramework" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>

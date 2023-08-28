@@ -11,12 +11,12 @@ public readonly struct Route
 {
   public readonly int From;
   public readonly int To;
-  public readonly IEnumerable<long> Path;
+  public readonly IEnumerable<int> Path;
 
   public Route(
     int from,
     int to,
-    IEnumerable<long>  path)
+    IEnumerable<int>  path)
   {
     this.From = from;
     this.To = to;
@@ -41,7 +41,7 @@ public readonly struct Route
       {
         var path = match.Groups["route"].Value
           .Split(',')
-          .Select(x => long.Parse(x))
+          .Select(x => int.Parse(x))
           .ToArray();
 
         return new Route(from, to, path);
@@ -59,10 +59,10 @@ public readonly struct Route
   public static Route RebuildWithReverseYield(Matrix matrix, int from, int to)
     => new(from, to, RebuildWithReverseYield(matrix.Data, matrix.Size, from, to).Reverse());
 
-  private static IEnumerable<long> RebuildWithLinkedList(
-    long[] routes, int sz, int i, int j)
+  private static IEnumerable<int> RebuildWithLinkedList(
+    int[] routes, int sz, int i, int j)
   {
-    var x = new LinkedList<long>();
+    var x = new LinkedList<int>();
 
     var z = routes[i * sz + j];
     while (z != Matrix.NO_EDGE) 
@@ -77,10 +77,10 @@ public readonly struct Route
     return x;
   }
 
-  private static IEnumerable<long> RebuildWithArray(
-    long[] routes, int sz, int i, int j)
+  private static IEnumerable<int> RebuildWithArray(
+    int[] routes, int sz, int i, int j)
   {
-    var x = new long[sz];
+    var x = new int[sz];
     var y = sz - 1;
 
     x[y--] = j;
@@ -94,11 +94,11 @@ public readonly struct Route
 
     x[y] = i;
 
-    return new ArraySegment<long>(x, y, sz - y);
+    return new ArraySegment<int>(x, y, sz - y);
   }
 
-  private static IEnumerable<long> RebuildWithReverseYield(
-    long[] routes, int sz, int i, int j)
+  private static IEnumerable<int> RebuildWithReverseYield(
+    int[] routes, int sz, int i, int j)
   {
     yield return j;
 

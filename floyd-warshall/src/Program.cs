@@ -1,8 +1,4 @@
-﻿using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Running;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using Spectre.Console.Cli;
+﻿using Spectre.Console.Cli;
 using Code.Interface;
 
 namespace Problems
@@ -25,6 +21,7 @@ namespace Problems
                 algorithm.AddCommand<RunAlgorithmBlockedFloydWarshallCommand>("blocked-floyd-warshall");
               });
             run.AddCommand<RunBenchmarkCommand>("benchmark");
+            run.AddCommand<RunHardwareFloydWarshallCommand>("hardware");
           });
       });
 

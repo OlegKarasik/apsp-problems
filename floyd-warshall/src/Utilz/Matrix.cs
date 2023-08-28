@@ -8,14 +8,14 @@ public readonly partial struct Matrix
 {
   public readonly struct Blocks
   {
-    public const long NO_EDGE = Matrix.NO_EDGE;
+    public const int NO_EDGE = Matrix.NO_EDGE;
 
-    public readonly long[] Data;
+    public readonly int[] Data;
     public readonly int Count;
     public readonly int Size;
 
     public Blocks(
-      long[] data,
+      int[] data,
       int count,
       int size)
     {
@@ -25,13 +25,13 @@ public readonly partial struct Matrix
     }
   }
 
-  public const long NO_EDGE = long.MaxValue / 2 - 1;
+  public const int NO_EDGE = int.MaxValue / 2 - 1;
 
-  public readonly long[] Data;
+  public readonly int[] Data;
   public readonly int Size;
 
   public Matrix(
-    long[] data,
+    int[] data,
     int size)
   {
     this.Data = data;
@@ -53,7 +53,7 @@ public readonly partial struct Matrix
     var lineralBlockSize = size * size;
     var lineralBlockRowSize = count * lineralBlockSize;
 
-    var blocks = new long[this.Size * this.Size];
+    var blocks = new int[this.Size * this.Size];
     for (var i = 0; i < this.Size; i++)
     {
       for (var j = 0; j < this.Size; j++)
@@ -80,7 +80,7 @@ public readonly partial struct Matrix
     var lineralBlockSize = blocks.Size * blocks.Size;
     var lineralBlockRowSize = blocks.Count * lineralBlockSize;
 
-    var data = new long[this.Data.Length];
+    var data = new int[this.Data.Length];
     for (var i = 0; i < this.Size; i++)
     {
       for (var j = 0; j < this.Size; j++)
@@ -97,7 +97,7 @@ public readonly partial struct Matrix
   public static Matrix Default(
     int size)
   {
-    var data = new long[size * size];
+    var data = new int[size * size];
     Array.Fill(data, NO_EDGE);
 
     return new Matrix(data, size);
@@ -106,7 +106,7 @@ public readonly partial struct Matrix
   public static Matrix Copy(
     Matrix matrix)
   {
-    var data = new long[matrix.Size * matrix.Size];
+    var data = new int[matrix.Size * matrix.Size];
 
     Array.Copy(matrix.Data, data, data.Length);
 
@@ -127,7 +127,7 @@ public readonly partial struct Matrix
     if (!int.TryParse(line, out var size))
       throw new Exception($"Unexpected start of stream, expected <number> as the first value from stream but got: '{line}'");
 
-    var data = new long[size * size];
+    var data = new int[size * size];
 
     // Fill the whole data with NO_EDGE values
     // because we are reading only existing edges
@@ -140,9 +140,9 @@ public readonly partial struct Matrix
       if (!match.Success)
         throw new Exception($"Unexpected value, expected value in <from> <to> <distance> format but got: '{line}'");
 
-      var from = long.Parse(match.Groups["from"].ValueSpan);
-      var to = long.Parse(match.Groups["to"].ValueSpan);
-      var distance = long.Parse(match.Groups["distance"].ValueSpan);
+      var from = int.Parse(match.Groups["from"].ValueSpan);
+      var to = int.Parse(match.Groups["to"].ValueSpan);
+      var distance = int.Parse(match.Groups["distance"].ValueSpan);
 
       data[from * size + to] = distance;
     }
