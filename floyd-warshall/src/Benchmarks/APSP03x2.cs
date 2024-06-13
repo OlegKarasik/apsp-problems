@@ -13,8 +13,8 @@ namespace Code.Benchmarks
     public static IEnumerable<string> ValuesForGraph() 
       => new[] 
         { 
-          //"1200-575520",
-          //"2400-2303040",
+          "1200-575520",
+          "2400-2303040",
           "4800-9214080"
         };
 
@@ -41,21 +41,15 @@ namespace Code.Benchmarks
       this.blocks = Matrix.Read(inputStream).SplitInBlocks(this.BlockSize);
     }
 
-    //[Benchmark(Baseline = true)]
+    [Benchmark(Baseline = true)]
     public void Baseline() 
       => Algorithms.BlockedFloydWarshall.Baseline(this.blocks);
 
     [Benchmark]
     public void ParallelOptimisation() 
       => Algorithms.BlockedFloydWarshall.ParallelOptimisation(this.blocks);
-    [Benchmark]
-    public void ParallelOptimisation1() 
-      => Algorithms.BlockedFloydWarshall.ParallelOptimisation(this.blocks);
-    [Benchmark]
-    public void ParallelOptimisation2() 
-      => Algorithms.BlockedFloydWarshall.ParallelOptimisation(this.blocks);
 
-    //[Benchmark]
+    [Benchmark]
     public void VectorOptimisation() 
       => Algorithms.BlockedFloydWarshall.VectorOptimisation(this.blocks);
     
