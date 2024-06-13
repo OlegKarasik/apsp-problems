@@ -8,7 +8,7 @@ using System.IO;
 namespace Code.Benchmarks
 {
   [HardwareCounters(HardwareCounter.LlcMisses)]
-  public class APSP02x1
+  public class APSP03x1
   {
     public static IEnumerable<string> ValuesForGraph() 
       => new[] 
