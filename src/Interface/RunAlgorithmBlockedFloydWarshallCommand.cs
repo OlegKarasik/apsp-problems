@@ -54,6 +54,10 @@ public class RunAlgorithmBlockedFloydWarshallCommand : Command<RunAlgorithmBlock
     {
       throw new ArgumentNullException(nameof(settings));
     }
+    if (settings.BlockSize == 0)
+    {
+      throw new ArgumentException("The --block-size parameter is required");
+    }
 
     var method = GetMethod(settings);
     if (!methods.TryGetValue(method, out var action))
