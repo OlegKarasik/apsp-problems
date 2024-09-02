@@ -6,3 +6,4 @@ obj
 .DS_Store
 BenchmarkDotNet.Artifacts
 *.input
+*.input.out
