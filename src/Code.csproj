@@ -16,6 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Data\4800.input">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Data\1200-350.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

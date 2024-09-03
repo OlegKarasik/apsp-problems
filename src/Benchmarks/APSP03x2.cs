@@ -11,18 +11,16 @@ namespace Code.Benchmarks
   public class APSP03x2
   {
     public static IEnumerable<string> ValuesForGraph() 
-      => new[] 
-        { 
-          "1200-575520",
-          "2400-2303040",
-          "4800-9214080"
-        };
+      =>
+        [
+          "4800"
+        ];
 
     public static IEnumerable<int> ValuesForBlockSize() 
-      => new[] 
-        { 
+      =>
+        [
           120
-        };
+        ];
 
     [ParamsSource(nameof(ValuesForGraph))]
     public string Graph;
