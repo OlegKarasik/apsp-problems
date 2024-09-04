@@ -143,13 +143,13 @@ public static class BlockedFloydWarshall
           var offset_im = i * lineral_block_row_size + m * lineral_block_size;
           var offset_mi = m * lineral_block_row_size + i * lineral_block_size;
 
-          var message_yX = new ParallelMessage(
+          var message_x = new ParallelMessage(
             iteration_sync, matrix, offset_im, offset_im, offset_mm, block_size, lineral_block_size);
 
           var message_y = new ParallelMessage(
             iteration_sync, matrix, offset_mi, offset_mm, offset_mi, block_size, lineral_block_size);
 
-          ThreadPool.QueueUserWorkItem(ParallelProcedure, message_yX, false);
+          ThreadPool.QueueUserWorkItem(ParallelProcedure, message_x, false);
           ThreadPool.QueueUserWorkItem(ParallelProcedure, message_y, false);
         }
       }
