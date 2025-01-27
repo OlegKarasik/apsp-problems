@@ -21,7 +21,6 @@ namespace Problems
                 algorithm.AddCommand<RunAlgorithmBlockedFloydWarshallCommand>("blocked-floyd-warshall");
               });
             run.AddCommand<RunBenchmarkCommand>("benchmark");
-            run.AddCommand<RunHardwareFloydWarshallCommand>("hardware");
           });
       });
 
